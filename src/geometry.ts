@@ -1,5 +1,5 @@
 import { F } from './catalog';
-import type { Connection, ModuleInst, PortInfo, Side } from './types';
+import type { Connection, FacilityType, IoPort, ModuleInst, PortInfo, Side } from './types';
 
 export const ROT_SIDE: Record<Side, Side> = { N: 'E', E: 'S', S: 'W', W: 'N' };
 export const DIRV: Record<Side, [number, number]> = { N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0] };
@@ -36,13 +36,33 @@ export function canPlace(
   return !modules.some((m) => m.id !== ignoreId && rectsOverlap(r, moduleRect(m)));
 }
 
-/** 모듈의 포트 목록 (월드 셀 좌표, 회전 반영). 입력은 W변, 출력은 E변에 기본 배치 */
+/**
+ * 모듈의 포트 목록 (월드 셀 좌표, 회전 반영).
+ * 포트에 side/pos가 지정되면 해당 변의 해당 칸에 고정, 없으면 입력=W, 출력=E에 자동 분배.
+ */
 export function getPorts(m: ModuleInst): PortInfo[] {
   const t = F(m.typeId);
+  const { w: fw, h: fh } = t.footprint;
   const list: Omit<PortInfo, 'x' | 'y'>[] = [];
-  const push = (arr: { resource: string; rate: number }[] | undefined, kind: 'input' | 'output', prefix: string, side: Side) => {
+  const push = (arr: FacilityType['inputs'], kind: 'input' | 'output', prefix: string, defSide: Side) => {
+    const autos = (arr ?? []).filter((p) => !p.side).length;
+    let autoIdx = 0;
     (arr ?? []).forEach((p, i) => {
-      list.push({ key: prefix + i, kind, side, frac: (i + 1) / (arr!.length + 1), resource: p.resource, rate: p.rate });
+      let side: Side;
+      let frac: number;
+      if (p.side) {
+        side = p.side;
+        const len = side === 'W' || side === 'E' ? fh : fw;
+        const pos = Math.max(0, Math.min(len - 1, p.pos ?? 0));
+        frac = (pos + 0.5) / len;
+      } else {
+        side = defSide;
+        frac = (++autoIdx) / (autos + 1);
+      }
+      list.push({
+        key: prefix + i, kind, side, frac,
+        resource: p.resource, rate: p.rate, transport: p.transport ?? 'belt',
+      });
     });
   };
   push(t.inputs, 'input', 'in:', 'W');
@@ -76,7 +96,7 @@ export function portByKey(m: ModuleInst, key: string): PortInfo | null {
 }
 
 /** 포트 키('in:2' 등)로 설비 정의의 IoPort 조회 */
-export function portDef(typeId: string, key: string): { resource: string; rate: number } | undefined {
+export function portDef(typeId: string, key: string): IoPort | undefined {
   const t = F(typeId);
   const [kind, idx] = key.split(':');
   return (kind === 'in' ? t.inputs : t.outputs)?.[+idx];

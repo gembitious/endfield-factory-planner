@@ -1,17 +1,35 @@
 {
   "version": 2,
   "metersPerCell": 4,
-  "note": "설비/자원 명칭은 한국어 정식 서비스 기준(나무위키 '명일방주: 엔드필드/설비' 문서 대조). 생산 속도(개/분)·footprint는 공식 미공개라 대략치이며 자유롭게 수정 가능. 표준 라인 = 컨베이어 벨트 최대 운송량인 2초당 1개 = 30/분 기준.",
+  "note": "설비/자원 명칭은 한국어 정식 서비스 기준(나무위키 「명일방주: 엔드필드/설비」 대조). 생산 속도(개/분)·footprint·포트 위치는 공식 미공개라 대략치이며 자유롭게 수정 가능. 표준 라인 = 컨베이어 벨트 2초당 1개 = 30/분, 파이프 = 1초당 2개 = 120/분. 포트 필드: transport(belt|pipe, 생략=belt), side(N|E|S|W)+pos(변 위 칸 번호, 생략=자동 배치). image는 public/ 기준 상대 경로이며 아이콘 이미지는 ⓒ Hypergryph/Gryphline (Endfield Talos Wiki 출처).",
   "categories": {
-    "자원 채집": { "color": "#d97706" },
-    "기초 생산": { "color": "#3b82f6" },
-    "합성 및 제작": { "color": "#8b5cf6" },
-    "기체 공업": { "color": "#14b8a6" },
-    "물류 장치": { "color": "#64748b" },
-    "전력 공급": { "color": "#eab308" },
-    "저장고 입출력": { "color": "#a855f7" },
-    "기능성 설비": { "color": "#10b981" },
-    "전투 보조": { "color": "#ef4444" }
+    "자원 채집": {
+      "color": "#d97706"
+    },
+    "기초 생산": {
+      "color": "#3b82f6"
+    },
+    "합성 및 제작": {
+      "color": "#8b5cf6"
+    },
+    "기체 공업": {
+      "color": "#14b8a6"
+    },
+    "물류 장치": {
+      "color": "#64748b"
+    },
+    "전력 공급": {
+      "color": "#eab308"
+    },
+    "저장고 입출력": {
+      "color": "#a855f7"
+    },
+    "기능성 설비": {
+      "color": "#10b981"
+    },
+    "전투 보조": {
+      "color": "#ef4444"
+    }
   },
   "facilities": [
     {
@@ -19,285 +37,639 @@
       "name": "휴대용 오리지늄 채굴기",
       "category": "자원 채집",
       "icon": "⛏️",
-      "footprint": { "w": 2, "h": 2 },
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
       "powerDraw": 0,
       "inputs": [],
-      "outputs": [{ "resource": "오리지늄 광물", "rate": 30 }],
-      "note": "오리지늄 자체 에너지로 무전력 가동. 창고 전송 기능 없음(튜토리얼용)."
+      "outputs": [
+        {
+          "resource": "오리지늄 광물",
+          "rate": 30
+        }
+      ],
+      "note": "오리지늄 자체 에너지로 무전력 가동. 창고 전송 기능 없음(튜토리얼용).",
+      "image": "icons/portable_miner.png"
     },
     {
       "id": "electric_miner",
       "name": "전동 채굴기",
       "category": "자원 채집",
       "icon": "⚡",
-      "footprint": { "w": 2, "h": 2 },
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
       "powerDraw": 5,
       "inputs": [],
       "outputs": [
-        { "resource": "오리지늄 광물", "rate": 30 },
-        { "resource": "자수정 광석", "rate": 30 }
+        {
+          "resource": "오리지늄 광물",
+          "rate": 30
+        },
+        {
+          "resource": "자수정 광석",
+          "rate": 30
+        }
       ],
-      "note": "오리지늄·자수정 채굴 가능(실제로는 설치한 광맥 종류에 따라 택1). 채굴물 자동 창고 전송."
+      "note": "오리지늄·자수정 채굴 가능(실제로는 설치한 광맥 종류에 따라 택1). 채굴물 자동 창고 전송.",
+      "image": "icons/electric_miner.png"
     },
     {
       "id": "electric_miner_2",
       "name": "전동 채굴기 II",
       "category": "자원 채집",
       "icon": "🔩",
-      "footprint": { "w": 2, "h": 2 },
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
       "powerDraw": 10,
       "inputs": [],
-      "outputs": [{ "resource": "페리움 광석", "rate": 30 }],
-      "note": "페리움 광석 등 더 깊은 광층 채굴. 오리지늄/자수정도 캘 수 있으나 성능 동일."
+      "outputs": [
+        {
+          "resource": "페리움 광석",
+          "rate": 30
+        }
+      ],
+      "note": "페리움 광석 등 더 깊은 광층 채굴. 오리지늄/자수정도 캘 수 있으나 성능 동일.",
+      "image": "icons/electric_miner_2.png"
     },
     {
       "id": "hydro_miner",
       "name": "수력 채굴기",
       "category": "자원 채집",
       "icon": "💧",
-      "footprint": { "w": 2, "h": 2 },
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
       "powerDraw": 0,
-      "inputs": [{ "resource": "청정수", "rate": 20 }],
-      "outputs": [{ "resource": "적동 광석", "rate": 30 }],
-      "note": "적동 광석 채굴. 전력 대신 청정수 공급 필요. 양수기 1대로 채굴기 3대 가동 가능."
+      "inputs": [
+        {
+          "resource": "청정수",
+          "rate": 20,
+          "transport": "pipe",
+          "side": "N",
+          "pos": 0
+        }
+      ],
+      "outputs": [
+        {
+          "resource": "적동 광석",
+          "rate": 30,
+          "side": "E",
+          "pos": 1
+        }
+      ],
+      "note": "적동 광석 채굴. 전력 대신 청정수 공급 필요. 양수기 1대로 채굴기 3대 가동 가능.",
+      "image": "icons/hydro_miner.png"
     },
     {
       "id": "water_pump",
       "name": "양수기",
       "category": "자원 채집",
       "icon": "🚰",
-      "footprint": { "w": 2, "h": 2 },
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
       "powerDraw": 10,
       "inputs": [],
-      "outputs": [{ "resource": "청정수", "rate": 60 }],
-      "note": "물과 인접한 땅에 설치. 1초당 1단위(60/분) 양수 — 2초당 1단위를 쓰는 설비 2대 커버."
+      "outputs": [
+        {
+          "resource": "청정수",
+          "rate": 60,
+          "transport": "pipe"
+        }
+      ],
+      "note": "물과 인접한 땅에 설치. 1초당 1단위(60/분) 양수 — 2초당 1단위를 쓰는 설비 2대 커버.",
+      "image": "icons/water_pump.png"
     },
     {
       "id": "acid_pump",
       "name": "내산성 양수기 II",
       "category": "자원 채집",
       "icon": "🧪",
-      "footprint": { "w": 2, "h": 2 },
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
       "powerDraw": 20,
       "inputs": [],
-      "outputs": [{ "resource": "산성 침적물", "rate": 60 }],
-      "note": "부식성 액체(산성 침적물)를 퍼올릴 수 있는 강화 양수기."
+      "outputs": [
+        {
+          "resource": "산성 침적물",
+          "rate": 60,
+          "transport": "pipe"
+        }
+      ],
+      "note": "부식성 액체(산성 침적물)를 퍼올릴 수 있는 강화 양수기.",
+      "image": "icons/acid_pump.png"
     },
     {
       "id": "refining_furnace",
       "name": "정련로",
       "category": "기초 생산",
       "icon": "🔥",
-      "footprint": { "w": 3, "h": 3 },
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
       "powerDraw": 5,
-      "inputs": [{ "resource": "자수정 광석", "rate": 30 }],
-      "outputs": [{ "resource": "정련 자수정", "rate": 30 }],
-      "note": "광물 정련·식물 탄화 등 대부분 공정의 첫 설비. 레시피 다양(오리지늄/페리움/적동, 카본 등) — 데이터 수정으로 변경."
+      "inputs": [
+        {
+          "resource": "자수정 광석",
+          "rate": 30
+        }
+      ],
+      "outputs": [
+        {
+          "resource": "정련 자수정",
+          "rate": 30
+        }
+      ],
+      "note": "광물 정련·식물 탄화 등 대부분 공정의 첫 설비. 레시피 다양(오리지늄/페리움/적동, 카본 등) — 데이터 수정으로 변경.",
+      "image": "icons/refining_furnace.png"
     },
     {
       "id": "crusher",
       "name": "분쇄기",
       "category": "기초 생산",
       "icon": "🔨",
-      "footprint": { "w": 3, "h": 3 },
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
       "powerDraw": 5,
-      "inputs": [{ "resource": "정련 오리지늄", "rate": 30 }],
-      "outputs": [{ "resource": "오리지늄 가루", "rate": 30 }],
-      "note": "광물·식물을 가루로 분쇄. 광물은 가루 1개, 식물/카본은 2~3개 산출. 자수정·페리움·적동은 정련품만 분쇄 가능."
+      "inputs": [
+        {
+          "resource": "정련 오리지늄",
+          "rate": 30
+        }
+      ],
+      "outputs": [
+        {
+          "resource": "오리지늄 가루",
+          "rate": 30
+        }
+      ],
+      "note": "광물·식물을 가루로 분쇄. 광물은 가루 1개, 식물/카본은 2~3개 산출. 자수정·페리움·적동은 정련품만 분쇄 가능.",
+      "image": "icons/crusher.png"
     },
     {
       "id": "parts_processor",
       "name": "부품 가공기",
       "category": "기초 생산",
       "icon": "⚙️",
-      "footprint": { "w": 3, "h": 3 },
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
       "powerDraw": 20,
-      "inputs": [{ "resource": "정련 자수정", "rate": 30 }],
-      "outputs": [{ "resource": "자수정 부품", "rate": 30 }],
-      "note": "정련 광물 → 부품. 자수정/페리움/강철 부품은 협곡 배터리 재료."
+      "inputs": [
+        {
+          "resource": "정련 자수정",
+          "rate": 30
+        }
+      ],
+      "outputs": [
+        {
+          "resource": "자수정 부품",
+          "rate": 30
+        }
+      ],
+      "note": "정련 광물 → 부품. 자수정/페리움/강철 부품은 협곡 배터리 재료.",
+      "image": "icons/parts_processor.png"
     },
     {
       "id": "molder",
       "name": "성형기",
       "category": "기초 생산",
       "icon": "🫙",
-      "footprint": { "w": 3, "h": 3 },
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
       "powerDraw": 10,
-      "inputs": [{ "resource": "정련 오리지늄", "rate": 60 }],
-      "outputs": [{ "resource": "병", "rate": 30 }],
-      "note": "정련 광물 2개 → 병 1개. 최대 효율은 정련로 2라인 입력."
+      "inputs": [
+        {
+          "resource": "정련 오리지늄",
+          "rate": 60
+        }
+      ],
+      "outputs": [
+        {
+          "resource": "병",
+          "rate": 30
+        }
+      ],
+      "note": "정련 광물 2개 → 병 1개. 최대 효율은 정련로 2라인 입력.",
+      "image": "icons/molder.png"
     },
     {
       "id": "cultivator",
       "name": "재배기",
       "category": "기초 생산",
       "icon": "🌾",
-      "footprint": { "w": 3, "h": 3 },
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
       "powerDraw": 20,
-      "inputs": [{ "resource": "씨앗", "rate": 30 }],
-      "outputs": [{ "resource": "식물", "rate": 30 }],
-      "note": "협곡 식물은 씨앗 1 → 식물 1. 무릉 식물은 액체 모드(물 공급)로 씨앗 1 → 식물 2."
+      "inputs": [
+        {
+          "resource": "씨앗",
+          "rate": 30
+        }
+      ],
+      "outputs": [
+        {
+          "resource": "식물",
+          "rate": 30
+        }
+      ],
+      "note": "협곡 식물은 씨앗 1 → 식물 1. 무릉 식물은 액체 모드(물 공급)로 씨앗 1 → 식물 2.",
+      "image": "icons/cultivator.png"
     },
     {
       "id": "seed_extractor",
       "name": "씨앗 추출기",
       "category": "기초 생산",
       "icon": "🌱",
-      "footprint": { "w": 3, "h": 3 },
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
       "powerDraw": 10,
-      "inputs": [{ "resource": "식물", "rate": 30 }],
-      "outputs": [{ "resource": "씨앗", "rate": 60 }],
-      "note": "협곡 식물 1 → 씨앗 2. 재배기 2 + 씨앗 추출기 1(재씨재)로 식물 무한 순환 라인 구성 가능."
+      "inputs": [
+        {
+          "resource": "식물",
+          "rate": 30
+        }
+      ],
+      "outputs": [
+        {
+          "resource": "씨앗",
+          "rate": 60
+        }
+      ],
+      "note": "협곡 식물 1 → 씨앗 2. 재배기 2 + 씨앗 추출기 1(재씨재)로 식물 무한 순환 라인 구성 가능.",
+      "image": "icons/seed_extractor.png"
     },
     {
       "id": "sewage_treatment",
       "name": "오염수 처리기",
       "category": "기초 생산",
       "icon": "🚱",
-      "footprint": { "w": 3, "h": 3 },
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
       "powerDraw": 50,
-      "inputs": [{ "resource": "오염수", "rate": 30 }],
+      "inputs": [
+        {
+          "resource": "오염수",
+          "rate": 30,
+          "transport": "pipe"
+        }
+      ],
       "outputs": [],
-      "note": "오염수·양정 폐액류 제거. 처리량이 모자라면 앞 라인 전체가 막히므로 여유 있게 배치."
+      "note": "오염수·양정 폐액류 제거. 처리량이 모자라면 앞 라인 전체가 막히므로 여유 있게 배치.",
+      "image": "icons/sewage_treatment.png"
     },
     {
       "id": "equip_part_synth",
       "name": "장비 부품 합성기",
       "category": "합성 및 제작",
       "icon": "🛡️",
-      "footprint": { "w": 3, "h": 3 },
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
       "powerDraw": 10,
-      "inputs": [{ "resource": "정련 오리지늄", "rate": 30 }],
-      "outputs": [{ "resource": "장비 부품", "rate": 15 }],
-      "note": "오퍼레이터 방어구용 장비 부품 생산. 티어별 레시피 다양 — 데이터 수정으로 변경."
+      "inputs": [
+        {
+          "resource": "정련 오리지늄",
+          "rate": 30
+        }
+      ],
+      "outputs": [
+        {
+          "resource": "장비 부품",
+          "rate": 15
+        }
+      ],
+      "note": "오퍼레이터 방어구용 장비 부품 생산. 티어별 레시피 다양 — 데이터 수정으로 변경.",
+      "image": "icons/equip_part_synth.png"
     },
     {
       "id": "filler",
       "name": "충진기",
       "category": "합성 및 제작",
       "icon": "💊",
-      "footprint": { "w": 3, "h": 3 },
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
       "powerDraw": 20,
       "inputs": [
-        { "resource": "식물 가루", "rate": 30 },
-        { "resource": "병", "rate": 30 }
+        {
+          "resource": "식물 가루",
+          "rate": 30
+        },
+        {
+          "resource": "병",
+          "rate": 30
+        }
       ],
-      "outputs": [{ "resource": "치료 아이템", "rate": 30 }],
-      "note": "식물 가루 + 병 → 치료 아이템. 무릉에서는 빈 병에 액체 주입 용도."
+      "outputs": [
+        {
+          "resource": "치료 아이템",
+          "rate": 30
+        }
+      ],
+      "note": "식물 가루 + 병 → 치료 아이템. 무릉에서는 빈 병에 액체 주입 용도.",
+      "image": "icons/filler.png"
     },
     {
       "id": "packer",
       "name": "포장기",
       "category": "합성 및 제작",
       "icon": "📦",
-      "footprint": { "w": 3, "h": 3 },
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
       "powerDraw": 20,
       "inputs": [
-        { "resource": "자수정 부품", "rate": 30 },
-        { "resource": "고밀도 오리지늄 가루", "rate": 30 }
+        {
+          "resource": "자수정 부품",
+          "rate": 30
+        },
+        {
+          "resource": "고밀도 오리지늄 가루",
+          "rate": 30
+        }
       ],
-      "outputs": [{ "resource": "협곡 배터리", "rate": 6 }],
-      "note": "배터리·공업 폭발물·무릉 치료 아이템 생산. 배터리 1라인 생산 시간 10초(=6/분)."
+      "outputs": [
+        {
+          "resource": "협곡 배터리",
+          "rate": 6
+        }
+      ],
+      "note": "배터리·공업 폭발물·무릉 치료 아이템 생산. 배터리 1라인 생산 시간 10초(=6/분).",
+      "image": "icons/packer.png"
     },
     {
       "id": "grinder",
       "name": "연마기",
       "category": "합성 및 제작",
       "icon": "🌀",
-      "footprint": { "w": 3, "h": 3 },
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
       "powerDraw": 50,
       "inputs": [
-        { "resource": "오리지늄 가루", "rate": 60 },
-        { "resource": "샌드리프 가루", "rate": 30 }
+        {
+          "resource": "오리지늄 가루",
+          "rate": 60
+        },
+        {
+          "resource": "샌드리프 가루",
+          "rate": 30
+        }
       ],
-      "outputs": [{ "resource": "고밀도 오리지늄 가루", "rate": 30 }],
-      "note": "가루 2 + 샌드리프 가루 1 → 고밀도 가루. 샌드리프 1라인으로 연마기 3대 운영 가능."
+      "outputs": [
+        {
+          "resource": "고밀도 오리지늄 가루",
+          "rate": 30
+        }
+      ],
+      "note": "가루 2 + 샌드리프 가루 1 → 고밀도 가루. 샌드리프 1라인으로 연마기 3대 운영 가능.",
+      "image": "icons/grinder.png"
     },
     {
       "id": "reactor",
       "name": "반응기",
       "category": "합성 및 제작",
       "icon": "⚗️",
-      "footprint": { "w": 3, "h": 3 },
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
       "powerDraw": 50,
       "inputs": [
-        { "resource": "식물 가루", "rate": 30 },
-        { "resource": "청정수", "rate": 30 }
+        {
+          "resource": "식물 가루",
+          "rate": 30,
+          "side": "W",
+          "pos": 1
+        },
+        {
+          "resource": "청정수",
+          "rate": 30,
+          "transport": "pipe",
+          "side": "N",
+          "pos": 1
+        }
       ],
-      "outputs": [{ "resource": "용액", "rate": 30 }],
-      "note": "고체+액체 화학반응(고체 2종·액체 2종 입력, 고체 1종·액체 2종 출력). 액화 용액·양정 공정의 핵심."
+      "outputs": [
+        {
+          "resource": "용액",
+          "rate": 30,
+          "transport": "pipe",
+          "side": "E",
+          "pos": 1
+        }
+      ],
+      "note": "고체+액체 화학반응(고체 2종·액체 2종 입력, 고체 1종·액체 2종 출력). 액화 용액·양정 공정의 핵심.",
+      "image": "icons/reactor.png"
     },
     {
       "id": "ext_reactor",
       "name": "확장 반응기",
       "category": "합성 및 제작",
       "icon": "🏗️",
-      "footprint": { "w": 3, "h": 5 },
+      "footprint": {
+        "w": 3,
+        "h": 5
+      },
       "powerDraw": 100,
       "inputs": [
-        { "resource": "식양", "rate": 30 },
-        { "resource": "오염수", "rate": 15 },
-        { "resource": "청정수", "rate": 30 },
-        { "resource": "페리움 가루", "rate": 15 }
+        {
+          "resource": "식양",
+          "rate": 30,
+          "side": "W",
+          "pos": 1
+        },
+        {
+          "resource": "오염수",
+          "rate": 15,
+          "transport": "pipe",
+          "side": "N",
+          "pos": 0
+        },
+        {
+          "resource": "청정수",
+          "rate": 30,
+          "transport": "pipe",
+          "side": "N",
+          "pos": 2
+        },
+        {
+          "resource": "페리움 가루",
+          "rate": 15,
+          "side": "W",
+          "pos": 3
+        }
       ],
       "outputs": [
-        { "resource": "양정", "rate": 15 },
-        { "resource": "불활성 양정 폐액", "rate": 30 }
+        {
+          "resource": "양정",
+          "rate": 15,
+          "side": "E",
+          "pos": 1
+        },
+        {
+          "resource": "불활성 양정 폐액",
+          "rate": 30,
+          "side": "S",
+          "pos": 1
+        }
       ],
-      "note": "반응기의 대형 버전(고체 포트 4:4, 캐시 8칸). 복잡한 다단 반응을 1대로 처리. 전력 2배."
+      "note": "반응기의 대형 버전(고체 포트 4:4, 캐시 8칸). 복잡한 다단 반응을 1대로 처리. 전력 2배.",
+      "image": "icons/ext_reactor.png"
     },
     {
       "id": "skyfire_furnace",
       "name": "천화로",
       "category": "합성 및 제작",
       "icon": "🌋",
-      "footprint": { "w": 4, "h": 4 },
+      "footprint": {
+        "w": 4,
+        "h": 4
+      },
       "powerDraw": 50,
       "maxPerBase": 12,
       "inputs": [
-        { "resource": "카본 조각", "rate": 30 },
-        { "resource": "청정수", "rate": 30 }
+        {
+          "resource": "카본 조각",
+          "rate": 30,
+          "side": "W",
+          "pos": 1
+        },
+        {
+          "resource": "청정수",
+          "rate": 30,
+          "transport": "pipe",
+          "side": "N",
+          "pos": 1
+        }
       ],
-      "outputs": [{ "resource": "식양", "rate": 15 }],
-      "note": "식양(무릉 전력 물질) 생산. 최대 배치 개수 제한(연구로 확장). 기체 모드 연구 시 카본+청정수+활성 대기로 공정 단축."
+      "outputs": [
+        {
+          "resource": "식양",
+          "rate": 15,
+          "side": "E",
+          "pos": 2
+        }
+      ],
+      "note": "식양(무릉 전력 물질) 생산. 최대 배치 개수 제한(연구로 확장). 기체 모드 연구 시 카본+청정수+활성 대기로 공정 단축.",
+      "image": "icons/skyfire_furnace.png"
     },
     {
       "id": "refiner",
       "name": "정제기",
       "category": "합성 및 제작",
       "icon": "✨",
-      "footprint": { "w": 3, "h": 3 },
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
       "powerDraw": 50,
-      "inputs": [{ "resource": "적동 용액", "rate": 30 }],
-      "outputs": [
-        { "resource": "혁동 용액", "rate": 30 },
-        { "resource": "산성 침적물", "rate": 30 }
+      "inputs": [
+        {
+          "resource": "적동 용액",
+          "rate": 30,
+          "transport": "pipe",
+          "side": "W",
+          "pos": 1
+        }
       ],
-      "note": "용액을 고순도로 정제(적동→혁동 등). 부산물(산성 침적물/청정수) 미배출 시 라인 막힘 주의."
+      "outputs": [
+        {
+          "resource": "혁동 용액",
+          "rate": 30,
+          "transport": "pipe",
+          "side": "E",
+          "pos": 1
+        },
+        {
+          "resource": "산성 침적물",
+          "rate": 30,
+          "transport": "pipe",
+          "side": "S",
+          "pos": 1
+        }
+      ],
+      "note": "용액을 고순도로 정제(적동→혁동 등). 부산물(산성 침적물/청정수) 미배출 시 라인 막힘 주의.",
+      "image": "icons/refiner.png"
     },
     {
       "id": "decomposer",
       "name": "분해기",
       "category": "합성 및 제작",
       "icon": "🔓",
-      "footprint": { "w": 3, "h": 3 },
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
       "powerDraw": 20,
-      "inputs": [{ "resource": "액체가 담긴 병", "rate": 30 }],
-      "outputs": [
-        { "resource": "병", "rate": 30 },
-        { "resource": "용액", "rate": 30 }
+      "inputs": [
+        {
+          "resource": "액체가 담긴 병",
+          "rate": 30
+        }
       ],
-      "note": "액체가 담긴 병 → 빈 병 + 액체 분리. 액체를 창고로 옮기는 우회 수단."
+      "outputs": [
+        {
+          "resource": "병",
+          "rate": 30,
+          "side": "E",
+          "pos": 1
+        },
+        {
+          "resource": "용액",
+          "rate": 30,
+          "transport": "pipe",
+          "side": "S",
+          "pos": 1
+        }
+      ],
+      "note": "액체가 담긴 병 → 빈 병 + 액체 분리. 액체를 창고로 옮기는 우회 수단.",
+      "image": "icons/decomposer.png"
     },
     {
       "id": "gas_collector",
       "name": "기체 수집기",
       "category": "기체 공업",
       "icon": "🫧",
-      "footprint": { "w": 3, "h": 3 },
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
       "powerDraw": 0,
       "inputs": [],
-      "outputs": [{ "resource": "활성 대기", "rate": 30 }],
+      "outputs": [
+        {
+          "resource": "활성 대기",
+          "rate": 30,
+          "transport": "pipe"
+        }
+      ],
       "note": "기체 채집 설비. 전력 불필요, 회수용 암관(최대 300m) 연결 필요."
     },
     {
@@ -305,13 +677,36 @@
       "name": "기체-액체 변환기",
       "category": "기체 공업",
       "icon": "🔃",
-      "footprint": { "w": 3, "h": 3 },
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
       "powerDraw": 20,
       "inputs": [
-        { "resource": "적동 기체", "rate": 30 },
-        { "resource": "식양 기체", "rate": 6 }
+        {
+          "resource": "적동 기체",
+          "rate": 30,
+          "transport": "pipe",
+          "side": "W",
+          "pos": 1
+        },
+        {
+          "resource": "식양 기체",
+          "rate": 6,
+          "transport": "pipe",
+          "side": "N",
+          "pos": 1
+        }
       ],
-      "outputs": [{ "resource": "적동 용액", "rate": 30 }],
+      "outputs": [
+        {
+          "resource": "적동 용액",
+          "rate": 30,
+          "transport": "pipe",
+          "side": "E",
+          "pos": 1
+        }
+      ],
       "note": "기체↔액체 변환. 가동용 식양 기체를 10초당 1(=6/분) 소모 — 초과 공급분은 그대로 소실되므로 파이프 컨트롤 포트로 정량 공급 권장."
     },
     {
@@ -319,13 +714,35 @@
       "name": "고체-기체 변환기",
       "category": "기체 공업",
       "icon": "🌫️",
-      "footprint": { "w": 3, "h": 3 },
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
       "powerDraw": 20,
       "inputs": [
-        { "resource": "식양", "rate": 30 },
-        { "resource": "액화 식양", "rate": 6 }
+        {
+          "resource": "식양",
+          "rate": 30,
+          "side": "W",
+          "pos": 1
+        },
+        {
+          "resource": "액화 식양",
+          "rate": 6,
+          "transport": "pipe",
+          "side": "N",
+          "pos": 1
+        }
       ],
-      "outputs": [{ "resource": "식양 기체", "rate": 30 }],
+      "outputs": [
+        {
+          "resource": "식양 기체",
+          "rate": 30,
+          "transport": "pipe",
+          "side": "E",
+          "pos": 1
+        }
+      ],
       "note": "고체↔기체 변환. 가동용 액화 식양 소량 요구. 기체 공정의 시작점."
     },
     {
@@ -333,13 +750,36 @@
       "name": "기체 반응기",
       "category": "기체 공업",
       "icon": "💨",
-      "footprint": { "w": 3, "h": 3 },
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
       "powerDraw": 50,
       "inputs": [
-        { "resource": "혁동 기체", "rate": 30 },
-        { "resource": "식양 기체", "rate": 30 }
+        {
+          "resource": "혁동 기체",
+          "rate": 30,
+          "transport": "pipe",
+          "side": "W",
+          "pos": 0
+        },
+        {
+          "resource": "식양 기체",
+          "rate": 30,
+          "transport": "pipe",
+          "side": "W",
+          "pos": 2
+        }
       ],
-      "outputs": [{ "resource": "작동 기체", "rate": 30 }],
+      "outputs": [
+        {
+          "resource": "작동 기체",
+          "rate": 30,
+          "transport": "pipe",
+          "side": "E",
+          "pos": 1
+        }
+      ],
       "note": "기체 2종을 합성하는 반응기."
     },
     {
@@ -347,293 +787,527 @@
       "name": "물류 브리지",
       "category": "물류 장치",
       "icon": "🌉",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 0,
       "passthrough": true,
-      "inputs": [{ "resource": "any", "rate": 30 }],
-      "outputs": [{ "resource": "any", "rate": 30 }],
-      "note": "컨베이어 벨트 2개를 교차시켜 간섭 없이 통과. 직선 구간에만 설치 가능."
+      "inputs": [
+        {
+          "resource": "any",
+          "rate": 30
+        }
+      ],
+      "outputs": [
+        {
+          "resource": "any",
+          "rate": 30
+        }
+      ],
+      "note": "컨베이어 벨트 2개를 교차시켜 간섭 없이 통과. 직선 구간에만 설치 가능.",
+      "image": "icons/logistics_bridge.png"
     },
     {
       "id": "merger",
       "name": "합류기",
       "category": "물류 장치",
       "icon": "🔗",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 0,
       "passthrough": true,
       "inputs": [
-        { "resource": "any", "rate": 30 },
-        { "resource": "any", "rate": 30 },
-        { "resource": "any", "rate": 30 }
+        {
+          "resource": "any",
+          "rate": 30
+        },
+        {
+          "resource": "any",
+          "rate": 30
+        },
+        {
+          "resource": "any",
+          "rate": 30
+        }
       ],
-      "outputs": [{ "resource": "any", "rate": 30 }],
-      "note": "최대 3개 벨트를 1개로 합류. 출력이 벨트 최대 운송량(30/분)을 넘으면 병목 발생 주의."
+      "outputs": [
+        {
+          "resource": "any",
+          "rate": 30
+        }
+      ],
+      "note": "최대 3개 벨트를 1개로 합류. 출력이 벨트 최대 운송량(30/분)을 넘으면 병목 발생 주의.",
+      "image": "icons/merger.png"
     },
     {
       "id": "sorter",
       "name": "분류기",
       "category": "물류 장치",
       "icon": "🔀",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 0,
       "passthrough": true,
-      "inputs": [{ "resource": "any", "rate": 30 }],
-      "outputs": [
-        { "resource": "any", "rate": 10 },
-        { "resource": "any", "rate": 10 },
-        { "resource": "any", "rate": 10 }
+      "inputs": [
+        {
+          "resource": "any",
+          "rate": 30
+        }
       ],
-      "note": "1개 벨트를 최대 3개로 분류(각 라인에 순서대로 1개씩). 30/분을 1/2·1/3로 분할하는 용도."
+      "outputs": [
+        {
+          "resource": "any",
+          "rate": 10
+        },
+        {
+          "resource": "any",
+          "rate": 10
+        },
+        {
+          "resource": "any",
+          "rate": 10
+        }
+      ],
+      "note": "1개 벨트를 최대 3개로 분류(각 라인에 순서대로 1개씩). 30/분을 1/2·1/3로 분할하는 용도.",
+      "image": "icons/sorter.png"
     },
     {
       "id": "item_control_port",
       "name": "아이템 컨트롤 포트",
       "category": "물류 장치",
       "icon": "🚦",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 0,
       "passthrough": true,
-      "inputs": [{ "resource": "any", "rate": 30 }],
-      "outputs": [{ "resource": "any", "rate": 30 }],
-      "note": "통과할 재료·최대 수량(최대 5000)을 설정하는 필터. 벨트 위에 설치."
+      "inputs": [
+        {
+          "resource": "any",
+          "rate": 30
+        }
+      ],
+      "outputs": [
+        {
+          "resource": "any",
+          "rate": 30
+        }
+      ],
+      "note": "통과할 재료·최대 수량(최대 5000)을 설정하는 필터. 벨트 위에 설치.",
+      "image": "icons/item_control_port.png"
     },
     {
       "id": "pipe_merger",
       "name": "파이프 합류기",
       "category": "물류 장치",
       "icon": "🪢",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 0,
       "passthrough": true,
       "inputs": [
-        { "resource": "any", "rate": 40 },
-        { "resource": "any", "rate": 40 },
-        { "resource": "any", "rate": 40 }
+        {
+          "resource": "any",
+          "rate": 40,
+          "transport": "pipe"
+        },
+        {
+          "resource": "any",
+          "rate": 40,
+          "transport": "pipe"
+        },
+        {
+          "resource": "any",
+          "rate": 40,
+          "transport": "pipe"
+        }
       ],
-      "outputs": [{ "resource": "any", "rate": 120 }],
-      "note": "최대 3개 파이프를 1개로 합류. 파이프 운송량은 1초당 2(=120/분)라 벨트보다 여유가 큼."
+      "outputs": [
+        {
+          "resource": "any",
+          "rate": 120,
+          "transport": "pipe"
+        }
+      ],
+      "note": "최대 3개 파이프를 1개로 합류. 파이프 운송량은 1초당 2(=120/분)라 벨트보다 여유가 큼.",
+      "image": "icons/pipe_merger.png"
     },
     {
       "id": "pipe_sorter",
       "name": "파이프 분류기",
       "category": "물류 장치",
       "icon": "🚿",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 0,
       "passthrough": true,
-      "inputs": [{ "resource": "any", "rate": 120 }],
-      "outputs": [
-        { "resource": "any", "rate": 40 },
-        { "resource": "any", "rate": 40 },
-        { "resource": "any", "rate": 40 }
+      "inputs": [
+        {
+          "resource": "any",
+          "rate": 120,
+          "transport": "pipe"
+        }
       ],
-      "note": "1개 파이프를 최대 3개로 분류. 양수기 1대(60/분)를 설비 2곳에 나눠 공급하는 것이 일반적 사용법."
+      "outputs": [
+        {
+          "resource": "any",
+          "rate": 40,
+          "transport": "pipe"
+        },
+        {
+          "resource": "any",
+          "rate": 40,
+          "transport": "pipe"
+        },
+        {
+          "resource": "any",
+          "rate": 40,
+          "transport": "pipe"
+        }
+      ],
+      "note": "1개 파이프를 최대 3개로 분류. 양수기 1대(60/분)를 설비 2곳에 나눠 공급하는 것이 일반적 사용법.",
+      "image": "icons/pipe_sorter.png"
     },
     {
       "id": "protocol_core",
       "name": "프로토콜 코어",
       "category": "전력 공급",
       "icon": "🏭",
-      "footprint": { "w": 5, "h": 5 },
+      "footprint": {
+        "w": 5,
+        "h": 5
+      },
       "powerDraw": 0,
       "powerSource": true,
       "powerRange": 80,
       "inputs": [],
       "outputs": [],
-      "note": "기지의 중심이자 전력의 원천. 여기서부터 중계기 체인으로 전력망을 확장."
+      "note": "기지의 중심이자 전력의 원천. 여기서부터 중계기 체인으로 전력망을 확장.",
+      "image": "icons/protocol_core.png"
     },
     {
       "id": "sub_core",
       "name": "서브 코어",
       "category": "전력 공급",
       "icon": "🏢",
-      "footprint": { "w": 4, "h": 4 },
+      "footprint": {
+        "w": 4,
+        "h": 4
+      },
       "powerDraw": 0,
       "powerSource": true,
       "powerRange": 80,
       "inputs": [],
       "outputs": [],
-      "note": "원거리 확장용 보조 코어."
+      "note": "원거리 확장용 보조 코어.",
+      "image": "icons/sub_core.png"
     },
     {
       "id": "relay",
       "name": "중계기",
       "category": "전력 공급",
       "icon": "📡",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 0,
       "powerRange": 80,
       "inputs": [],
       "outputs": [],
-      "note": "반경 80m 전력 배급 중계 설비(일명 전봇대). 80m마다 연쇄 설치 필요. 연구 후 미니 전력 공급기 역할도 수행."
+      "note": "반경 80m 전력 배급 중계 설비(일명 전봇대). 80m마다 연쇄 설치 필요. 연구 후 미니 전력 공급기 역할도 수행.",
+      "image": "icons/relay.png"
     },
     {
       "id": "shiyang_relay",
       "name": "식양 중계기",
       "category": "전력 공급",
       "icon": "🏮",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 0,
       "powerRange": 80,
       "inputs": [],
       "outputs": [],
-      "note": "무릉 전용 중계기. 80m 내 식양 전력 설비에 자동 연결. 일반 버전과 호환 불가."
+      "note": "무릉 전용 중계기. 80m 내 식양 전력 설비에 자동 연결. 일반 버전과 호환 불가.",
+      "image": "icons/shiyang_relay.png"
     },
     {
       "id": "power_supplier",
       "name": "전력 공급기",
       "category": "전력 공급",
       "icon": "🔌",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 0,
       "powerRange": 30,
       "inputs": [],
       "outputs": [],
-      "note": "범위 내 설비에 무선 전력 공급. 연구 완료 시 30m 단거리 전송(미니 중계기) 가능."
+      "note": "범위 내 설비에 무선 전력 공급. 연구 완료 시 30m 단거리 전송(미니 중계기) 가능.",
+      "image": "icons/power_supplier.png"
     },
     {
       "id": "shiyang_supplier",
       "name": "식양 전력 공급기",
       "category": "전력 공급",
       "icon": "🎐",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 0,
       "powerRange": 30,
       "inputs": [],
       "outputs": [],
-      "note": "무릉 전용 전력 공급기. 80m 내 코어/식양 중계기에 자동 연결, 30m 단거리 전송."
+      "note": "무릉 전용 전력 공급기. 80m 내 코어/식양 중계기에 자동 연결, 30m 단거리 전송.",
+      "image": "icons/shiyang_supplier.png"
     },
     {
       "id": "thermal_bank",
       "name": "열에너지 뱅크",
       "category": "전력 공급",
       "icon": "🔋",
-      "footprint": { "w": 2, "h": 2 },
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
       "powerDraw": 0,
-      "inputs": [{ "resource": "협곡 배터리", "rate": 1.5 }],
+      "inputs": [
+        {
+          "resource": "협곡 배터리",
+          "rate": 1.5
+        }
+      ],
       "outputs": [],
-      "note": "오리지늄/배터리를 연료로 지역 전체 전력 생산(배터리 1개당 40초 가동). 배터리 1라인(6/분)으로 뱅크 4대 가동 가능."
+      "note": "오리지늄/배터리를 연료로 지역 전체 전력 생산(배터리 1개당 40초 가동). 배터리 1라인(6/분)으로 뱅크 4대 가동 가능.",
+      "image": "icons/thermal_bank.png"
     },
     {
       "id": "protocol_storage",
       "name": "프로토콜 저장함",
       "category": "저장고 입출력",
       "icon": "🏦",
-      "footprint": { "w": 2, "h": 2 },
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
       "powerDraw": 5,
-      "inputs": [{ "resource": "any", "rate": 30 }],
+      "inputs": [
+        {
+          "resource": "any",
+          "rate": 30
+        }
+      ],
       "outputs": [],
-      "note": "전력 공급 시 아이템을 중앙 창고로 원격 전송. 생산 라인 마무리에 배치. 생산품 1종당 1개 권장."
+      "note": "전력 공급 시 아이템을 중앙 창고로 원격 전송. 생산 라인 마무리에 배치. 생산품 1종당 1개 권장.",
+      "image": "icons/protocol_storage.png"
     },
     {
       "id": "warehouse_in_port",
       "name": "창고 입력 포트",
       "category": "저장고 입출력",
       "icon": "📥",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 0,
-      "inputs": [{ "resource": "any", "rate": 30 }],
+      "inputs": [
+        {
+          "resource": "any",
+          "rate": 30
+        }
+      ],
       "outputs": [],
-      "note": "창고 입출력 라인에 붙여 아이템을 현지 창고로 운송."
+      "note": "창고 입출력 라인에 붙여 아이템을 현지 창고로 운송.",
+      "image": "icons/warehouse_in_port.png"
     },
     {
       "id": "warehouse_out_port",
       "name": "창고 출력 포트",
       "category": "저장고 입출력",
       "icon": "📤",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 0,
       "inputs": [],
-      "outputs": [{ "resource": "any", "rate": 30 }],
-      "note": "창고에 보관된 아이템을 지정해 자동으로 꺼내는 포트. 공장 원료 공급의 핵심."
+      "outputs": [
+        {
+          "resource": "any",
+          "rate": 30
+        }
+      ],
+      "note": "창고에 보관된 아이템을 지정해 자동으로 꺼내는 포트. 공장 원료 공급의 핵심.",
+      "image": "icons/warehouse_out_port.png"
     },
     {
       "id": "liquid_tank",
       "name": "액체 저장 탱크",
       "category": "저장고 입출력",
       "icon": "🛢️",
-      "footprint": { "w": 2, "h": 2 },
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
       "powerDraw": 0,
       "passthrough": true,
-      "inputs": [{ "resource": "any", "rate": 120 }],
-      "outputs": [{ "resource": "any", "rate": 120 }],
-      "note": "액체를 500단위까지 저장. 버퍼 겸 병 담기/붓기 지점."
+      "inputs": [
+        {
+          "resource": "any",
+          "rate": 120,
+          "transport": "pipe"
+        }
+      ],
+      "outputs": [
+        {
+          "resource": "any",
+          "rate": 120,
+          "transport": "pipe"
+        }
+      ],
+      "note": "액체를 500단위까지 저장. 버퍼 겸 병 담기/붓기 지점.",
+      "image": "icons/liquid_tank.png"
     },
     {
       "id": "duct_inlet",
       "name": "암관 입구",
       "category": "저장고 입출력",
       "icon": "🕳️",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 0,
-      "inputs": [{ "resource": "any", "rate": 120 }],
+      "inputs": [
+        {
+          "resource": "any",
+          "rate": 120,
+          "transport": "pipe"
+        }
+      ],
       "outputs": [],
-      "note": "지하 암관 입구(최대 200m, 전력 불필요). 이 도구에서는 입구→출구를 연결선으로 이어 표현. 자체 500단위 저장."
+      "note": "지하 암관 입구(최대 200m, 전력 불필요). 이 도구에서는 입구→출구를 연결선으로 이어 표현. 자체 500단위 저장.",
+      "image": "icons/duct_inlet.png"
     },
     {
       "id": "duct_outlet",
       "name": "암관 출구",
       "category": "저장고 입출력",
       "icon": "⛲",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 0,
       "inputs": [],
-      "outputs": [{ "resource": "any", "rate": 120 }],
-      "note": "지하 암관 출구. 암관 입구와 짝으로 사용."
+      "outputs": [
+        {
+          "resource": "any",
+          "rate": 120,
+          "transport": "pipe"
+        }
+      ],
+      "note": "지하 암관 출구. 암관 입구와 짝으로 사용.",
+      "image": "icons/duct_outlet.png"
     },
     {
       "id": "simple_storage",
       "name": "간편 보관소",
       "category": "기능성 설비",
       "icon": "🧰",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 5,
       "inputs": [],
       "outputs": [],
-      "note": "전력망 안이면 어디서든 지역 창고에 접근할 수 있는 설비."
+      "note": "전력망 안이면 어디서든 지역 창고에 접근할 수 있는 설비.",
+      "image": "icons/simple_storage.png"
     },
     {
       "id": "zipline_hook",
       "name": "집라인 후크",
       "category": "기능성 설비",
       "icon": "🪝",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 5,
       "inputs": [],
       "outputs": [],
-      "note": "최대 80m 집라인 설치. 직선상 장애물이 있으면 연결 불가."
+      "note": "최대 80m 집라인 설치. 직선상 장애물이 있으면 연결 불가.",
+      "image": "icons/zipline_hook.png"
     },
     {
       "id": "long_zipline_hook",
       "name": "장거리 집라인 후크",
       "category": "기능성 설비",
       "icon": "🎢",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 5,
       "inputs": [],
       "outputs": [],
-      "note": "최대 110m 집라인 + 연속 이동 기능. 크리스톤 부품의 유일한 사용처."
+      "note": "최대 110m 집라인 + 연속 이동 기능. 크리스톤 부품의 유일한 사용처.",
+      "image": "icons/long_zipline_hook.png"
     },
     {
       "id": "sprinkler",
       "name": "스프링클러",
       "category": "기능성 설비",
       "icon": "💦",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 10,
-      "inputs": [{ "resource": "청정수", "rate": 4 }],
+      "inputs": [
+        {
+          "resource": "청정수",
+          "rate": 4,
+          "transport": "pipe"
+        }
+      ],
       "outputs": [],
-      "note": "논배미 자동 급수(분사 범위 5x4, 논배미 2개 커버). 자체 50단위 저장."
+      "note": "논배미 자동 급수(분사 범위 5x4, 논배미 2개 커버). 자체 50단위 저장.",
+      "image": "icons/sprinkler.png"
     },
     {
       "id": "liquid_drain",
       "name": "액체 배출 장치",
       "category": "기능성 설비",
       "icon": "🚽",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 10,
-      "inputs": [{ "resource": "any", "rate": 30 }],
+      "inputs": [
+        {
+          "resource": "any",
+          "rate": 30
+        }
+      ],
       "outputs": [],
       "note": "액체를 강/구덩이에 배출. 정제기 부산물(청정수·산성 침적물) 버리기에 사용. 오염수·양정 폐액류는 배출 불가."
     },
@@ -642,77 +1316,105 @@
       "name": "전언 신호기",
       "category": "기능성 설비",
       "icon": "🪧",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 0,
       "inputs": [],
       "outputs": [],
-      "note": "다른 유저에게 키워드 조합 팁을 남기는 비동기 멀티플레이 설비."
+      "note": "다른 유저에게 키워드 조합 팁을 남기는 비동기 멀티플레이 설비.",
+      "image": "icons/message_beacon.png"
     },
     {
       "id": "gun_tower",
       "name": "총기 타워",
       "category": "전투 보조",
       "icon": "🎯",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 5,
       "inputs": [],
       "outputs": [],
-      "note": "단일 대상 물리 피해(공격력 609 / 2초 / 15m). 전력망 연결 또는 배터리 투입으로 가동."
+      "note": "단일 대상 물리 피해(공격력 609 / 2초 / 15m). 전력망 연결 또는 배터리 투입으로 가동.",
+      "image": "icons/gun_tower.png"
     },
     {
       "id": "medical_tower",
       "name": "의료 타워",
       "category": "전투 보조",
       "icon": "➕",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 5,
       "inputs": [],
       "outputs": [],
-      "note": "5초마다 6m 내 오퍼레이터 치유."
+      "note": "5초마다 6m 내 오퍼레이터 치유.",
+      "image": "icons/medical_tower.png"
     },
     {
       "id": "grenade_tower",
       "name": "유탄 타워",
       "category": "전투 보조",
       "icon": "💥",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 10,
       "inputs": [],
       "outputs": [],
-      "note": "범위 물리 피해(공격력 981 / 3초 / 12.5m). 초반 방어전 주력."
+      "note": "범위 물리 피해(공격력 981 / 3초 / 12.5m). 초반 방어전 주력.",
+      "image": "icons/grenade_tower.png"
     },
     {
       "id": "current_tower",
       "name": "전류 타워",
       "category": "전투 보조",
       "icon": "🌩️",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 20,
       "inputs": [],
       "outputs": [],
-      "note": "최대 2회 튕기는 전기 피해(공격력 4886 / 3초 / 12.5m)."
+      "note": "최대 2회 튕기는 전기 피해(공격력 4886 / 3초 / 12.5m).",
+      "image": "icons/current_tower.png"
     },
     {
       "id": "watch_tower",
       "name": "감시 타워",
       "category": "전투 보조",
       "icon": "🔭",
-      "footprint": { "w": 1, "h": 1 },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
       "powerDraw": 20,
       "inputs": [],
       "outputs": [],
-      "note": "고위협 적 우선 저격(공격력 11634 / 5초 / 20m)."
+      "note": "고위협 적 우선 저격(공격력 11634 / 5초 / 20m).",
+      "image": "icons/watch_tower.png"
     },
     {
       "id": "core_mortar",
       "name": "중추 박격포",
       "category": "전투 보조",
       "icon": "🚀",
-      "footprint": { "w": 2, "h": 2 },
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
       "powerDraw": 20,
       "inputs": [],
       "outputs": [],
-      "note": "최대 범위·최고 화력의 포격 설비(공격력 33000 / 8초 / 25m). v1.2 추가."
+      "note": "최대 범위·최고 화력의 포격 설비(공격력 33000 / 8초 / 25m). v1.2 추가.",
+      "image": "icons/core_mortar.png"
     }
   ]
 }

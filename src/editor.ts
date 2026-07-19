@@ -94,14 +94,31 @@ export function initEditor(hooks: EditorHooks): void {
   }
 
   /* ── 폼 ── */
+  function ioRowHtml(p: Partial<IoPort>): string {
+    const sideOpt = (v: string, label: string) =>
+      `<option value="${v}" ${(p.side ?? '') === v ? 'selected' : ''}>${label}</option>`;
+    return `
+      <input type="text" class="ed-io-res" value="${esc(p.resource ?? '')}" placeholder="리소스 (any = 전체)">
+      <input type="number" class="ed-io-rate" value="${p.rate ?? 30}" step="0.5" min="0" title="분당 개수">
+      <select class="ed-io-tp" title="운송 종류">
+        <option value="belt" ${(p.transport ?? 'belt') === 'belt' ? 'selected' : ''}>벨트</option>
+        <option value="pipe" ${p.transport === 'pipe' ? 'selected' : ''}>파이프</option>
+      </select>
+      <select class="ed-io-side" title="포트가 붙는 변 (자동 = 입력 W / 출력 E 분배)">
+        ${sideOpt('', '자동')}${sideOpt('N', '북(N)')}${sideOpt('E', '동(E)')}${sideOpt('S', '남(S)')}${sideOpt('W', '서(W)')}
+      </select>
+      <input type="number" class="ed-io-pos" value="${p.pos ?? 0}" min="0" max="19" title="변 위의 칸 번호(0부터)" ${p.side ? '' : 'disabled'}>
+      <button class="btn danger ed-io-del" title="포트 삭제">✕</button>`;
+  }
   function ioRows(kind: 'inputs' | 'outputs', arr: IoPort[] | undefined): string {
-    const rows = (arr ?? []).map((p, i) => `
-      <div class="ed-io-row" data-kind="${kind}" data-i="${i}">
-        <input type="text" class="ed-io-res" value="${esc(p.resource)}" placeholder="리소스 (any = 전체)">
-        <input type="number" class="ed-io-rate" value="${p.rate}" step="0.5" min="0" title="분당 개수">
-        <button class="btn danger ed-io-del" title="포트 삭제">✕</button>
-      </div>`).join('');
+    const rows = (arr ?? []).map((p) => `<div class="ed-io-row" data-kind="${kind}">${ioRowHtml(p)}</div>`).join('');
     return `${rows}<button class="btn ed-io-add" data-kind="${kind}">＋ ${kind === 'inputs' ? '입력' : '출력'} 포트 추가</button>`;
+  }
+  function wireIoRow(row: HTMLElement): void {
+    row.querySelector('.ed-io-del')!.addEventListener('click', () => row.remove());
+    const sideSel = row.querySelector('.ed-io-side') as HTMLSelectElement;
+    const posInput = row.querySelector('.ed-io-pos') as HTMLInputElement;
+    sideSel.addEventListener('change', () => { posInput.disabled = !sideSel.value; });
   }
 
   function renderForm(): void {
@@ -118,7 +135,8 @@ export function initEditor(hooks: EditorHooks): void {
         <label>이름 <input type="text" id="efName" value="${esc(f.name)}"></label>
         <label>카테고리 <input type="text" id="efCat" value="${esc(f.category)}" list="efCatList">
           <datalist id="efCatList">${cats.map((c) => `<option value="${esc(c)}">`).join('')}</datalist></label>
-        <label>아이콘 <input type="text" id="efIcon" value="${esc(f.icon ?? '')}" maxlength="4"></label>
+        <label>아이콘 (이모지 폴백) <input type="text" id="efIcon" value="${esc(f.icon ?? '')}" maxlength="4"></label>
+        <label>이미지 경로 <input type="text" id="efImage" value="${esc(f.image ?? '')}" placeholder="icons/xxx.png (public/ 기준)"></label>
         <label>가로(칸) <input type="number" id="efW" value="${f.footprint.w}" min="1" max="20"></label>
         <label>세로(칸) <input type="number" id="efH" value="${f.footprint.h}" min="1" max="20"></label>
         <label>전력 소비량 <input type="number" id="efPower" value="${f.powerDraw ?? 0}" min="0"></label>
@@ -142,17 +160,12 @@ export function initEditor(hooks: EditorHooks): void {
         const row = document.createElement('div');
         row.className = 'ed-io-row';
         row.dataset.kind = kind;
-        row.innerHTML = `
-          <input type="text" class="ed-io-res" value="" placeholder="리소스 (any = 전체)">
-          <input type="number" class="ed-io-rate" value="30" step="0.5" min="0">
-          <button class="btn danger ed-io-del" title="포트 삭제">✕</button>`;
-        row.querySelector('.ed-io-del')!.addEventListener('click', () => row.remove());
+        row.innerHTML = ioRowHtml({});
+        wireIoRow(row);
         btn.before(row);
       });
     });
-    form.querySelectorAll<HTMLButtonElement>('.ed-io-del').forEach((btn) => {
-      btn.addEventListener('click', () => (btn.parentElement as HTMLElement).remove());
-    });
+    form.querySelectorAll<HTMLElement>('.ed-io-row').forEach(wireIoRow);
 
     $('efApply').addEventListener('click', () => {
       const newId = ($('efId') as HTMLInputElement).value.trim();
@@ -168,7 +181,16 @@ export function initEditor(hooks: EditorHooks): void {
         $(boxId).querySelectorAll<HTMLElement>('.ed-io-row').forEach((row) => {
           const res = (row.querySelector('.ed-io-res') as HTMLInputElement).value.trim();
           const rate = parseFloat((row.querySelector('.ed-io-rate') as HTMLInputElement).value);
-          if (res) out.push({ resource: res, rate: Number.isFinite(rate) ? rate : 0 });
+          if (!res) return;
+          const port: IoPort = { resource: res, rate: Number.isFinite(rate) ? rate : 0 };
+          const tp = (row.querySelector('.ed-io-tp') as HTMLSelectElement).value;
+          if (tp === 'pipe') port.transport = 'pipe';
+          const side = (row.querySelector('.ed-io-side') as HTMLSelectElement).value;
+          if (side) {
+            port.side = side as IoPort['side'];
+            port.pos = Math.max(0, parseInt((row.querySelector('.ed-io-pos') as HTMLInputElement).value, 10) || 0);
+          }
+          out.push(port);
         });
         return out;
       };
@@ -176,6 +198,7 @@ export function initEditor(hooks: EditorHooks): void {
       f.name = name;
       f.category = cat;
       f.icon = ($('efIcon') as HTMLInputElement).value.trim() || undefined;
+      f.image = ($('efImage') as HTMLInputElement).value.trim() || undefined;
       f.footprint = {
         w: Math.max(1, parseInt(($('efW') as HTMLInputElement).value, 10) || 1),
         h: Math.max(1, parseInt(($('efH') as HTMLInputElement).value, 10) || 1),

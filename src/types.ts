@@ -1,7 +1,16 @@
+export type Side = 'N' | 'E' | 'S' | 'W';
+export type Transport = 'belt' | 'pipe';
+
 /** 설비 입출력 포트 정의 (분당 개수) */
 export interface IoPort {
   resource: string; // 'any' = 모든 리소스 통과(물류/저장)
   rate: number;
+  /** 운송 종류. 생략 시 belt. 벨트↔파이프 포트는 서로 연결 불가 */
+  transport?: Transport;
+  /** 포트가 붙는 변. 생략 시 입력=W, 출력=E에 자동 분배 */
+  side?: Side;
+  /** 해당 변 위의 칸 번호(0부터). side 지정 시에만 사용 */
+  pos?: number;
 }
 
 /** 설비 정의 — public/data/facilities.json에서 로드 */
@@ -10,6 +19,8 @@ export interface FacilityType {
   name: string;
   category: string;
   icon?: string;
+  /** 썸네일 이미지 경로 (BASE_URL 기준 상대 경로, 예: "icons/crusher.png"). 없으면 icon 이모지 사용 */
+  image?: string;
   footprint: { w: number; h: number };
   powerDraw?: number;
   /** 전력 공급 범위(미터). 중계기/코어 등 */
@@ -62,8 +73,6 @@ export interface SerializedLayout {
   modules: ModuleInst[];
   connections: Connection[];
 }
-
-export type Side = 'N' | 'E' | 'S' | 'W';
 
 /** 회전이 적용된 포트의 월드(셀) 좌표 정보 */
 export interface PortInfo extends IoPort {

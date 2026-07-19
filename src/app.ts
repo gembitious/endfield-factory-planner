@@ -2,7 +2,7 @@ import { CATALOG, CAT_COLOR, F } from './catalog';
 import { initEditor } from './editor';
 import { computeFlows } from './flows';
 import {
-  canPlace, connPath, dims, distToSeg, getPorts, portByKey,
+  canPlace, connPath, dims, distToSeg, getPorts, portByKey, portDef,
 } from './geometry';
 import type { Pt } from './geometry';
 import {
@@ -124,6 +124,12 @@ export function startApp(): void {
     else if (a.port.kind === 'input' && b.port.kind === 'output') { from = b; to = a; }
     else { toast('출력(●) 포트와 입력(○) 포트를 연결해야 합니다'); return false; }
     if (from.moduleId === to.moduleId) { toast('같은 설비끼리는 연결할 수 없습니다'); return false; }
+    const tpOut = from.port.transport ?? 'belt';
+    const tpIn = to.port.transport ?? 'belt';
+    if (tpOut !== tpIn) {
+      toast('운송 종류 불일치: 벨트 포트끼리, 파이프 포트끼리만 연결할 수 있습니다');
+      return false;
+    }
     const rOut = from.port.resource;
     const rIn = to.port.resource;
     if (rOut !== 'any' && rIn !== 'any' && rOut !== rIn) {
@@ -175,12 +181,28 @@ export function startApp(): void {
     return null;
   }
 
+  /* ── 이미지 캐시 (설비 썸네일) ── */
+  const imgCache = new Map<string, HTMLImageElement>();
+  function getImage(src: string): HTMLImageElement | null {
+    let img = imgCache.get(src);
+    if (!img) {
+      img = new Image();
+      img.src = import.meta.env.BASE_URL + src;
+      img.onload = () => requestRender();
+      imgCache.set(src, img);
+    }
+    return img.complete && img.naturalWidth > 0 ? img : null;
+  }
+
   /* ── 렌더링 (필요 시에만 다시 그리기) ── */
   let renderQueued = false;
   function requestRender(): void {
     if (renderQueued) return;
     renderQueued = true;
-    requestAnimationFrame(() => { renderQueued = false; render(); });
+    const run = () => { renderQueued = false; render(); };
+    // 숨겨진 탭에서는 rAF가 멈추므로 setTimeout으로 폴백 (복귀 시 빈 화면 방지)
+    if (document.hidden) setTimeout(run, 32);
+    else requestAnimationFrame(run);
   }
   function resize(): void {
     const dpr = window.devicePixelRatio || 1;
@@ -242,6 +264,10 @@ export function startApp(): void {
       ctx.setLineDash([]);
     }
   }
+  function connTransport(c: { fromModuleId: number; fromPort: string }): 'belt' | 'pipe' {
+    const m = modById(c.fromModuleId);
+    return (m && portDef(m.typeId, c.fromPort)?.transport) ?? 'belt';
+  }
   function drawConnections(): void {
     for (const c of state.connections) {
       const pts = connPath(c, modById);
@@ -249,8 +275,10 @@ export function startApp(): void {
       const isBottleneck = flowInfo.bottlenecks.has(c.id);
       const isSel = selected?.kind === 'conn' && selected.id === c.id;
       const isHover = hover?.kind === 'conn' && hover.id === c.id;
-      ctx.strokeStyle = isSel ? cssVar('--accent') : isBottleneck ? cssVar('--warn') : isHover ? cssVar('--text') : cssVar('--belt');
+      const isPipe = connTransport(c) === 'pipe';
+      ctx.strokeStyle = isSel ? cssVar('--accent') : isBottleneck ? cssVar('--warn') : isHover ? cssVar('--text') : isPipe ? cssVar('--pipe') : cssVar('--belt');
       ctx.lineWidth = isBottleneck || isSel ? 3.5 : 2.5;
+      ctx.setLineDash(isPipe ? [7, 4] : []);
       ctx.lineJoin = 'round';
       ctx.beginPath();
       pts.forEach((p, i) => {
@@ -258,6 +286,7 @@ export function startApp(): void {
         if (i) ctx.lineTo(s.x, s.y); else ctx.moveTo(s.x, s.y);
       });
       ctx.stroke();
+      ctx.setLineDash([]);
       // 종점 화살표
       const b = sOf(pts[pts.length - 1].x, pts[pts.length - 1].y);
       const a = sOf(pts[pts.length - 2].x, pts[pts.length - 2].y);
@@ -309,12 +338,21 @@ export function startApp(): void {
 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      const iconSize = Math.min(w, h) * 0.42;
-      if (iconSize > 8) {
-        ctx.font = `${iconSize}px sans-serif`;
-        ctx.fillText(t.icon ?? '■', p0.x + w / 2, p0.y + h / 2 - (view.scale > 0.7 && Math.min(d.w, d.h) > 1 ? h * 0.08 : 0));
+      const nameShown = view.scale > 0.7 && Math.min(d.w, d.h) > 1;
+      const img = t.image ? getImage(t.image) : null;
+      if (img) {
+        const size = Math.min(w, h) * (nameShown ? 0.62 : 0.78);
+        if (size > 10) {
+          ctx.drawImage(img, p0.x + (w - size) / 2, p0.y + (h - size) / 2 - (nameShown ? h * 0.07 : 0), size, size);
+        }
+      } else {
+        const iconSize = Math.min(w, h) * 0.42;
+        if (iconSize > 8) {
+          ctx.font = `${iconSize}px sans-serif`;
+          ctx.fillText(t.icon ?? '■', p0.x + w / 2, p0.y + h / 2 - (nameShown ? h * 0.08 : 0));
+        }
       }
-      if (view.scale > 0.7 && Math.min(d.w, d.h) > 1) {
+      if (nameShown) {
         ctx.font = `${Math.max(9, s * 0.28)}px sans-serif`;
         ctx.fillStyle = cssVar('--text');
         ctx.fillText(t.name, p0.x + w / 2, p0.y + h - Math.max(8, s * 0.3), w - 6);
@@ -329,20 +367,33 @@ export function startApp(): void {
           const sp = sOf(port.x, port.y);
           const r = Math.max(3.5, s * 0.13);
           const isPendingStart = pending && pending.moduleId === m.id && pending.portKey === port.key;
-          ctx.beginPath(); ctx.arc(sp.x, sp.y, r, 0, Math.PI * 2);
+          // 벨트 포트 = 원, 파이프 포트 = 마름모
+          const portShape = (rad: number) => {
+            ctx.beginPath();
+            if (port.transport === 'pipe') {
+              ctx.moveTo(sp.x, sp.y - rad * 1.25);
+              ctx.lineTo(sp.x + rad * 1.25, sp.y);
+              ctx.lineTo(sp.x, sp.y + rad * 1.25);
+              ctx.lineTo(sp.x - rad * 1.25, sp.y);
+              ctx.closePath();
+            } else {
+              ctx.arc(sp.x, sp.y, rad, 0, Math.PI * 2);
+            }
+          };
+          portShape(r);
           if (port.kind === 'output') {
-            ctx.fillStyle = cssVar('--warn');
+            ctx.fillStyle = port.transport === 'pipe' ? cssVar('--pipe') : cssVar('--warn');
             ctx.fill();
           } else {
             ctx.fillStyle = cssVar('--bg-canvas');
             ctx.fill();
-            ctx.strokeStyle = cssVar('--ok');
+            ctx.strokeStyle = port.transport === 'pipe' ? cssVar('--pipe') : cssVar('--ok');
             ctx.lineWidth = 2;
             ctx.stroke();
           }
           const isPortHover = hover?.kind === 'port' && hover.moduleId === m.id && hover.port?.key === port.key;
           if (isPendingStart || isPortHover) {
-            ctx.beginPath(); ctx.arc(sp.x, sp.y, r + 3, 0, Math.PI * 2);
+            portShape(r + 3);
             ctx.strokeStyle = cssVar('--accent');
             ctx.lineWidth = 2;
             ctx.stroke();
@@ -379,10 +430,16 @@ export function startApp(): void {
     ctx.lineWidth = 2;
     roundRect(p0.x, p0.y, d.w * s, d.h * s, 5);
     ctx.stroke();
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = `${Math.min(d.w, d.h) * s * 0.4}px sans-serif`;
-    ctx.fillText(t.icon ?? '■', p0.x + (d.w * s) / 2, p0.y + (d.h * s) / 2);
+    const gimg = t.image ? getImage(t.image) : null;
+    if (gimg) {
+      const size = Math.min(d.w * s, d.h * s) * 0.7;
+      ctx.drawImage(gimg, p0.x + (d.w * s - size) / 2, p0.y + (d.h * s - size) / 2, size, size);
+    } else {
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = `${Math.min(d.w, d.h) * s * 0.4}px sans-serif`;
+      ctx.fillText(t.icon ?? '■', p0.x + (d.w * s) / 2, p0.y + (d.h * s) / 2);
+    }
     ctx.globalAlpha = 1;
     if (t.powerRange && t.powerRange > 0) {
       const c = sOf(ghost.x + d.w / 2, ghost.y + d.h / 2);
@@ -424,7 +481,10 @@ export function startApp(): void {
         const power = f.powerRange && f.powerRange > 0
           ? `범위 ${f.powerRange}m`
           : f.powerDraw && f.powerDraw > 0 ? `전력 ${f.powerDraw}` : '무전력';
-        el.innerHTML = `<span class="pal-icon">${f.icon ?? '■'}</span>
+        const iconHtml = f.image
+          ? `<img class="pal-icon-img" src="${esc(import.meta.env.BASE_URL + f.image)}" alt="">`
+          : `<span class="pal-icon">${f.icon ?? '■'}</span>`;
+        el.innerHTML = `${iconHtml}
           <span><div class="pal-name">${esc(f.name)}</div>
           <div class="pal-meta">${f.footprint.w}×${f.footprint.h} · ${esc(power)}</div></span>`;
         el.addEventListener('mousedown', (e) => {
@@ -661,8 +721,9 @@ export function startApp(): void {
     let html = '';
     if (hover.kind === 'port' && hover.port) {
       const label = hover.port.kind === 'output' ? '출력' : '입력';
+      const tp = hover.port.transport === 'pipe' ? '파이프' : '벨트';
       const res = hover.port.resource === 'any' ? '모든 리소스' : hover.port.resource;
-      html = `<div class="tt-title">${label} 포트</div>${esc(res)} · ${hover.port.rate}/분<br><span class="dim">클릭해서 벨트/파이프 연결</span>`;
+      html = `<div class="tt-title">${label} 포트 (${tp})</div>${esc(res)} · ${hover.port.rate}/분<br><span class="dim">클릭해서 ${tp} 연결 · 같은 종류의 포트끼리만 연결 가능</span>`;
     } else if (hover.kind === 'module' && hover.id !== undefined) {
       const m = modById(hover.id);
       if (!m) return;
@@ -672,12 +733,10 @@ export function startApp(): void {
       if (t.powerRange && t.powerRange > 0) html += ` · 범위 ${t.powerRange}m`;
       else if (t.powerDraw && t.powerDraw > 0) html += ` · 전력 ${t.powerDraw}`;
       html += `</span>`;
-      if (t.inputs?.length) {
-        html += `<br><span class="dim">입력:</span> ` + t.inputs.map((i) => `${esc(i.resource === 'any' ? '모든 리소스' : i.resource)} ${i.rate}/분`).join(', ');
-      }
-      if (t.outputs?.length) {
-        html += `<br><span class="dim">출력:</span> ` + t.outputs.map((o) => `${esc(o.resource === 'any' ? '모든 리소스' : o.resource)} ${o.rate}/분`).join(', ');
-      }
+      const ioTxt = (p: { resource: string; rate: number; transport?: string }) =>
+        `${esc(p.resource === 'any' ? '모든 리소스' : p.resource)}${p.transport === 'pipe' ? '💧' : ''} ${p.rate}/분`;
+      if (t.inputs?.length) html += `<br><span class="dim">입력:</span> ` + t.inputs.map(ioTxt).join(', ');
+      if (t.outputs?.length) html += `<br><span class="dim">출력:</span> ` + t.outputs.map(ioTxt).join(', ');
       if (powerInfo.unpowered.has(m.id)) html += `<br><span class="bad">⚡ 전력 범위 밖!</span>`;
       for (const w of flowInfo.modWarn[m.id] ?? []) html += `<br><span class="warn">⚠️ ${esc(w)}</span>`;
     } else if (hover.kind === 'conn' && hover.id !== undefined) {
@@ -710,7 +769,8 @@ export function startApp(): void {
       <div class="legend">
         <span class="dot" style="background:var(--warn)"></span>출력 포트 &nbsp;
         <span class="dot" style="border:2px solid var(--ok); background:transparent"></span>입력 포트<br>
-        <span style="color:var(--warn)">⚠️ 주황 벨트</span> = 병목(공급 &lt; 수요)<br>
+        원형 포트/회색 실선 = 벨트 · <span style="color:var(--pipe)">마름모 포트/청록 점선 = 파이프💧</span><br>
+        <span style="color:var(--warn)">⚠️ 주황 연결</span> = 병목(공급 &lt; 수요)<br>
         <span style="color:var(--danger)">⚡ 빨간 테두리</span> = 전력 범위 밖<br>
         노란 원 = 활성 전력 범위 · 점선 원 = 비활성(코어 미연결)
       </div>`;
@@ -757,7 +817,10 @@ export function startApp(): void {
     if (!m) { selected = null; renderInfo(); return; }
     const t = F(m.typeId);
     const catColor = CAT_COLOR[t.category] ?? '#888';
-    let html = `<h2>${t.icon ?? ''} ${esc(t.name)} <span class="chip" style="background:${catColor}">${esc(t.category)}</span></h2>
+    const infoIcon = t.image
+      ? `<img class="info-icon" src="${esc(import.meta.env.BASE_URL + t.image)}" alt="">`
+      : (t.icon ?? '');
+    let html = `<h2>${infoIcon} ${esc(t.name)} <span class="chip" style="background:${catColor}">${esc(t.category)}</span></h2>
       <div style="color:var(--text-dim)">${t.footprint.w}×${t.footprint.h} · 회전 ${m.rot}° · 위치 (${m.x}, ${m.y})</div>`;
     if (t.powerRange && t.powerRange > 0) html += `<div style="color:var(--text-dim)">전력 공급 범위: ${t.powerRange}m${t.powerSource ? ' (전력원)' : ' (코어 연쇄 필요)'}</div>`;
     else if (t.powerDraw && t.powerDraw > 0) html += `<div style="color:var(--text-dim)">전력 소비량: ${t.powerDraw}</div>`;
@@ -777,7 +840,7 @@ export function startApp(): void {
         const short = ics.length > 0 && inp.resource !== 'any' && supply < inp.rate - 1e-6;
         const supplyTxt = ics.length ? ` (공급 ${round1(supply)})` : ' (미연결)';
         html += `<div class="io-row ${short ? 'short' : ''}">
-          <span>${esc(inp.resource === 'any' ? '모든 리소스' : inp.resource)}</span>
+          <span>${esc(inp.resource === 'any' ? '모든 리소스' : inp.resource)}${inp.transport === 'pipe' ? ' 💧' : ''}</span>
           <span class="rate">${inp.rate}/분${supplyTxt}</span></div>`;
       });
       html += `</div>`;
@@ -785,7 +848,7 @@ export function startApp(): void {
     if (t.outputs?.length) {
       html += `<div class="sect"><div class="sect-title">출력 (생산)</div>`;
       for (const o of t.outputs) {
-        html += `<div class="io-row"><span>${esc(o.resource === 'any' ? '모든 리소스' : o.resource)}</span><span class="rate">${o.rate}/분</span></div>`;
+        html += `<div class="io-row"><span>${esc(o.resource === 'any' ? '모든 리소스' : o.resource)}${o.transport === 'pipe' ? ' 💧' : ''}</span><span class="rate">${o.rate}/분</span></div>`;
       }
       html += `</div>`;
     }
