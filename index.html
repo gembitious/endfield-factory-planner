@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>엔드필드 공장 플래너</title>
+</head>
+<body>
+  <header>
+    <h1>⚙️ 엔드필드 <span>공장 플래너</span></h1>
+    <button class="btn" id="btnRotate" title="선택한 설비 또는 배치 중인 설비 회전">↻ 회전 (R)</button>
+    <button class="btn" id="btnDelete" title="선택 항목 삭제">🗑 삭제 (Del)</button>
+    <div class="spacer"></div>
+    <button class="btn" id="btnExport">⬇ JSON 내보내기</button>
+    <button class="btn" id="btnImport">⬆ JSON 가져오기</button>
+    <button class="btn" id="btnShare">🔗 공유 URL 복사</button>
+    <button class="btn danger" id="btnClear">✕ 전체 지우기</button>
+    <button class="btn" id="btnTheme" title="다크/라이트 전환">🌙</button>
+    <input type="file" id="fileInput" accept=".json,application/json" />
+  </header>
+
+  <div id="main">
+    <aside id="palette"></aside>
+    <div id="canvasWrap">
+      <canvas id="cv"></canvas>
+      <div id="hint">팔레트에서 설비를 드래그하거나 클릭 후 캔버스에 배치 · <b>R</b> 회전 · 포트(●) 클릭으로 벨트/파이프 연결 · 휠 줌 · 우클릭/휠클릭 드래그로 화면 이동</div>
+      <div id="statusbar"></div>
+      <div id="tooltip"></div>
+    </div>
+    <aside id="info"></aside>
+  </div>
+  <div id="toast"></div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
