@@ -59,6 +59,8 @@ export interface Connection {
   fromPort: string;
   toModuleId: number;
   toPort: string;
+  /** 사용자가 클릭으로 지정한 경유 칸들. 경로는 이 칸들을 순서대로 지난다. 없으면 자동 최단 경로 */
+  waypoints?: { x: number; y: number }[];
 }
 
 export interface LayoutState {

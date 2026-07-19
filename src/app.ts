@@ -5,7 +5,7 @@ import {
   canPlace, dims, distToSeg, getPorts, moduleRect, portByKey, portDef,
 } from './geometry';
 import type { Pt } from './geometry';
-import { computeRoutes, emptyRouteInfo, rectBlockedByRoutes } from './routing';
+import { computeRoutes, emptyRouteInfo, portAnchor, rectBlockedByRoutes, routeThrough } from './routing';
 import type { RouteInfo } from './routing';
 import {
   LS_THEME, decodeShareHash, deserializeInto, encodeShareHash, loadLocal, saveLocal, serialize,
@@ -37,7 +37,7 @@ export function startApp(): void {
   let paletteDrag: { typeId: string; startX: number; startY: number; moved: boolean } | null = null;
   let moveDrag: { id: number; offX: number; offY: number; origX: number; origY: number; moved: boolean } | null = null;
   let pan: { sx: number; sy: number; vx: number; vy: number; moved: boolean } | null = null;
-  let pending: { moduleId: number; portKey: string } | null = null;
+  let pending: { moduleId: number; portKey: string; waypoints: { x: number; y: number }[] } | null = null;
   let mouseCell: Pt = { x: 0, y: 0 };
   let mousePx: Pt = { x: 0, y: 0 };
 
@@ -125,7 +125,11 @@ export function startApp(): void {
       }
     }
   }
-  function tryConnect(a: { moduleId: number; port: PortInfo }, b: { moduleId: number; port: PortInfo }): boolean {
+  function tryConnect(
+    a: { moduleId: number; port: PortInfo },
+    b: { moduleId: number; port: PortInfo },
+    waypoints: { x: number; y: number }[] = [],
+  ): boolean {
     let from: typeof a; let to: typeof a;
     if (a.port.kind === 'output' && b.port.kind === 'input') { from = a; to = b; }
     else if (a.port.kind === 'input' && b.port.kind === 'output') { from = b; to = a; }
@@ -148,10 +152,13 @@ export function startApp(): void {
       toast('이미 연결되어 있습니다');
       return false;
     }
+    // 경유지는 출력 포트 기준 순서로 저장 (입력 포트부터 그렸다면 뒤집기)
+    const wp = a.port.kind === 'output' ? waypoints : [...waypoints].reverse();
     const conn = {
       id: state.nextId++,
       fromModuleId: from.moduleId, fromPort: from.port.key,
       toModuleId: to.moduleId, toPort: to.port.key,
+      ...(wp.length ? { waypoints: wp } : {}),
     };
     state.connections.push(conn);
     recompute();
@@ -159,7 +166,7 @@ export function startApp(): void {
       // 설비/기존 라인에 막혀 경로가 없으면 연결 자체를 취소
       state.connections = state.connections.filter((c) => c.id !== conn.id);
       recompute();
-      toast('경로를 찾을 수 없습니다 — 벨트/파이프가 지나갈 칸이 막혀 있습니다');
+      toast('경로를 찾을 수 없습니다 — 경유지를 조정하거나 공간을 확보하세요');
       return false;
     }
     scheduleSave();
@@ -378,6 +385,16 @@ export function startApp(): void {
         ctx.textBaseline = 'middle';
         ctx.fillText(routed ? '⚠️' : '🚫', ms.x, ms.y - 10);
       }
+      // 선택된 연결의 경유지 표시
+      if (isSel && c.waypoints?.length) {
+        for (const wpt of c.waypoints) {
+          const cp = sOf(wpt.x + 0.5, wpt.y + 0.5);
+          ctx.beginPath();
+          ctx.arc(cp.x, cp.y, Math.max(3, s * 0.14), 0, Math.PI * 2);
+          ctx.fillStyle = cssVar('--accent');
+          ctx.fill();
+        }
+      }
     }
     // 교차 브리지 (직선×직선 교차 칸에 자동 생성)
     for (const br of routeInfo.bridges) {
@@ -494,13 +511,47 @@ export function startApp(): void {
     const m = modById(pending.moduleId);
     if (!m) { pending = null; return; }
     const p = portByKey(m, pending.portKey);
-    if (!p) { pending = null; return; }
-    const a = sOf(p.x, p.y);
-    ctx.strokeStyle = cssVar('--accent');
-    ctx.setLineDash([6, 5]);
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(mousePx.x, mousePx.y); ctx.stroke();
-    ctx.setLineDash([]);
+    const A = portAnchor(m, pending.portKey);
+    if (!p || !A) { pending = null; return; }
+    const s = CELL * view.scale;
+    const isPipe = (p.transport ?? 'belt') === 'pipe';
+    const occ = isPipe ? routeInfo.pipeUse : routeInfo.beltUse;
+
+    // 커서 위치까지의 실시간 경로 미리보기 (경유지 경유)
+    const target = { x: Math.floor(mouseCell.x), y: Math.floor(mouseCell.y) };
+    const cells = routeThrough(A, { cell: target, axis: null }, pending.waypoints, routeInfo.blocked, occ);
+
+    if (cells) {
+      const pts: Pt[] = [A.point, ...cells.map((c) => ({ x: c.x + 0.5, y: c.y + 0.5 }))];
+      ctx.globalAlpha = 0.55;
+      ctx.strokeStyle = isPipe ? cssVar('--pipe') : cssVar('--belt');
+      ctx.lineWidth = isPipe ? Math.max(3, s * 0.26) : Math.max(4, s * 0.42);
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      pts.forEach((pt, i) => {
+        const sp = sOf(pt.x, pt.y);
+        if (i) ctx.lineTo(sp.x, sp.y); else ctx.moveTo(sp.x, sp.y);
+      });
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    } else {
+      // 현재 커서까지는 경로 불가 → 빨간 점선 안내
+      const a = sOf(p.x, p.y);
+      ctx.strokeStyle = cssVar('--danger');
+      ctx.setLineDash([6, 5]);
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(mousePx.x, mousePx.y); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    // 경유지 마커
+    for (const wpt of pending.waypoints) {
+      const c = sOf(wpt.x + 0.5, wpt.y + 0.5);
+      const r = Math.max(3, s * 0.14);
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = cssVar('--accent');
+      ctx.fill();
+    }
   }
   function drawGhost(): void {
     if (!ghost || !ghost.onCanvas) return;
@@ -656,15 +707,28 @@ export function startApp(): void {
     const ph = hitPort(w);
     if (ph && ph.moduleId !== undefined && ph.port) {
       if (!pending) {
-        pending = { moduleId: ph.moduleId, portKey: ph.port.key };
+        pending = { moduleId: ph.moduleId, portKey: ph.port.key, waypoints: [] };
+      } else if (pending.moduleId === ph.moduleId && pending.portKey === ph.port.key) {
+        pending = null; // 같은 포트 재클릭 → 취소
       } else {
         const sm = modById(pending.moduleId);
         const sp = sm ? portByKey(sm, pending.portKey) : null;
-        if (sp && !(pending.moduleId === ph.moduleId && pending.portKey === ph.port.key)) {
-          tryConnect({ moduleId: pending.moduleId, port: sp }, { moduleId: ph.moduleId, port: ph.port });
+        if (sp && tryConnect({ moduleId: pending.moduleId, port: sp }, { moduleId: ph.moduleId, port: ph.port }, pending.waypoints)) {
+          pending = null; // 성공 시에만 종료 — 실패하면 그리던 경로 유지
         }
-        pending = null; // 성공/실패/같은 포트 재클릭 모두 대기 해제
       }
+      return;
+    }
+
+    // 연결 그리는 중: 클릭한 칸을 경유지로 추가
+    if (pending) {
+      const cell = { x: Math.floor(w.x), y: Math.floor(w.y) };
+      if (hitModule(w)) {
+        toast('설비 위로는 지나갈 수 없습니다 — 포트를 클릭해 연결을 끝내세요');
+        return;
+      }
+      const last = pending.waypoints[pending.waypoints.length - 1];
+      if (!last || last.x !== cell.x || last.y !== cell.y) pending.waypoints.push(cell);
       return;
     }
 
@@ -793,7 +857,11 @@ export function startApp(): void {
     if (tag === 'INPUT' || tag === 'TEXTAREA') return;
     requestRender();
     if (e.key === 'r' || e.key === 'R' || e.key === 'ㄱ') rotateTarget();
-    else if (e.key === 'Delete' || e.key === 'Backspace') deleteSelected();
+    else if (e.key === 'Backspace' && pending) {
+      // 그리는 중: 마지막 경유지 취소 (없으면 그리기 자체를 취소)
+      if (pending.waypoints.length) pending.waypoints.pop();
+      else pending = null;
+    } else if (e.key === 'Delete' || e.key === 'Backspace') deleteSelected();
     else if (e.key === 'Escape') {
       setArmed(null);
       ghost = null;
@@ -811,7 +879,7 @@ export function startApp(): void {
       const label = hover.port.kind === 'output' ? '출력' : '입력';
       const tp = hover.port.transport === 'pipe' ? '파이프' : '벨트';
       const res = hover.port.resource === 'any' ? '모든 리소스' : hover.port.resource;
-      html = `<div class="tt-title">${label} 포트 (${tp})</div>${esc(res)} · ${hover.port.rate}/분<br><span class="dim">클릭해서 ${tp} 연결 · 같은 종류의 포트끼리만 연결 가능</span>`;
+      html = `<div class="tt-title">${label} 포트 (${tp})</div>${esc(res)} · ${hover.port.rate}/분<br><span class="dim">클릭 후 빈 칸을 찍어 경로를 그리고, 반대 포트 클릭으로 완성</span>`;
     } else if (hover.kind === 'module' && hover.id !== undefined) {
       const m = modById(hover.id);
       if (!m) return;
@@ -879,7 +947,10 @@ export function startApp(): void {
         · 팔레트 드래그/클릭 → 배치<br>
         · <kbd>Shift</kbd>+클릭 배치 → 연속 배치<br>
         · <kbd>R</kbd> 회전 · <kbd>Del</kbd> 삭제 · <kbd>Esc</kbd> 취소<br>
-        · 포트 ● 클릭 → 다른 포트 클릭으로 연결<br>
+        · 포트 클릭 → <b>빈 칸을 클릭할 때마다 경유지 추가</b> →<br>
+        &nbsp;&nbsp;반대 포트 클릭으로 연결 완성<br>
+        · 그리는 중 <kbd>Backspace</kbd> = 경유지 되돌리기<br>
+        · 경유지 없이 포트→포트 클릭 = 자동 경로<br>
         · 휠 줌 · 우클릭/휠클릭 드래그 이동<br><br>
         설비 데이터는 <b>public/data/facilities.json</b>에서 직접 수정할 수 있습니다.
       </div>` + legend;
@@ -900,6 +971,7 @@ export function startApp(): void {
         <div class="sect"><div class="sect-title">구간</div>
           <div class="io-row"><span>${esc(F(fm.typeId).name)}</span><span>→</span><span>${esc(F(tm.typeId).name)}</span></div>
           <div class="io-row"><span>점유 길이</span><span class="rate">${cellCount !== null ? `${cellCount}칸` : '경로 없음'}</span></div>
+          <div class="io-row"><span>경유지</span><span class="rate">${c.waypoints?.length ? `${c.waypoints.length}개 (수동 경로)` : '없음 (자동 경로)'}</span></div>
         </div>
         <div class="sect"><div class="sect-title">운반 흐름</div>
           ${entries.length

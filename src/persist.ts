@@ -12,6 +12,7 @@ export function serialize(state: LayoutState): SerializedLayout {
     connections: state.connections.map((c) => ({
       id: c.id, fromModuleId: c.fromModuleId, fromPort: c.fromPort,
       toModuleId: c.toModuleId, toPort: c.toPort,
+      ...(c.waypoints?.length ? { waypoints: c.waypoints.map((w) => ({ x: w.x, y: w.y })) } : {}),
     })),
   };
 }
@@ -29,7 +30,12 @@ export function deserializeInto(state: LayoutState, data: SerializedLayout): num
   const ids = new Set(mods.map((m) => m.id));
   for (const c of data.connections ?? []) {
     if (!ids.has(c.fromModuleId) || !ids.has(c.toModuleId)) { skipped++; continue; }
-    conns.push({ ...c });
+    conns.push({
+      ...c,
+      waypoints: Array.isArray(c.waypoints)
+        ? c.waypoints.map((w) => ({ x: w.x | 0, y: w.y | 0 }))
+        : undefined,
+    });
   }
   state.modules = mods;
   state.connections = conns;

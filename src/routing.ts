@@ -4,8 +4,10 @@ import type { LayoutState, ModuleInst, Transport } from './types';
 
 /**
  * 벨트/파이프 셀 점유 라우팅.
- * - 연결선은 그리드 칸을 실제로 점유하며 설비·같은 종류의 기존 라인을 피해 자동 경로를 찾는다.
- * - 같은 종류(벨트끼리/파이프끼리)는 직선×직선 수직 교차만 허용 — 교차 칸에는 브리지가 자동 표시된다.
+ * - 연결선은 그리드 칸을 실제로 점유하며 설비·같은 종류의 기존 라인을 피해 경로를 찾는다.
+ * - 사용자가 클릭한 경유 칸(waypoints)을 순서대로 지나도록 구간별로 경로를 이어 붙인다.
+ *   경유지가 없으면 자동 최단 경로.
+ * - 같은 종류(벨트끼리/파이프끼리)는 직선×직선 수직 교차만 허용 — 교차 칸에 브리지가 자동 표시된다.
  *   (꺾이는 모서리 칸에서는 교차 불가 — 실게임 물류 브리지 규칙)
  * - 벨트와 파이프는 서로 겹칠 수 있다 (파이프는 높이가 낮은 설비와 겹침 가능 규칙의 단순화).
  * - 설비는 벨트/파이프가 점유한 칸 위에 배치할 수 없다.
@@ -29,20 +31,25 @@ export interface RouteInfo {
   pipeUse: Map<string, CellUse>;
   bridges: { x: number; y: number; transport: Transport }[];
   unrouted: Set<number>;
+  /** 설비가 점유한 칸 (프리뷰 재사용) */
+  blocked: Set<string>;
 }
 
 export function emptyRouteInfo(): RouteInfo {
-  return { polys: new Map(), cells: new Map(), beltUse: new Map(), pipeUse: new Map(), bridges: [], unrouted: new Set() };
+  return {
+    polys: new Map(), cells: new Map(), beltUse: new Map(), pipeUse: new Map(),
+    bridges: [], unrouted: new Set(), blocked: new Set(),
+  };
 }
 
-interface Anchor {
+export interface Anchor {
   cell: { x: number; y: number };
   axis: Axis;
   point: Pt; // 포트 위치(footprint 경계 위)
 }
 
 /** 포트 바로 바깥 칸과 진출 축 */
-function portAnchor(m: ModuleInst, portKey: string): Anchor | null {
+export function portAnchor(m: ModuleInst, portKey: string): Anchor | null {
   const p = portByKey(m, portKey);
   if (!p) return null;
   const d = DIRV[p.side];
@@ -95,33 +102,44 @@ const MARGIN = 24;       // 시작/끝 바운딩 박스 밖 허용 여유(칸)
 const NODE_CAP = 40000;  // A* 확장 상한
 const TURN_COST = 0.4;   // 직선 선호
 
+type BitsFn = (x: number, y: number) => number;
+
+interface LegResult {
+  cells: { x: number; y: number }[];
+  endAxis: Axis;
+}
+
 /**
- * A* 경로 탐색. 셀 상태 = (x, y, 진입 축).
- * 이동 규칙:
- * - 설비 칸 통과 불가
- * - 같은 종류 점유 칸: 진입 축이 이미 사용 중이면 불가, 모서리(bits=3) 칸 불가 → 수직 교차만 허용
- * - 방향 전환은 현재 칸이 완전히 빈 칸일 때만 (모서리 칸은 교차 불가이므로)
+ * 한 구간 A* 탐색. 셀 상태 = (x, y, 진입 축).
+ * - otherBits: 다른 연결의 점유(교차 규칙 적용 대상), ownBits: 이 연결의 앞 구간 점유
+ * - endAxis가 null이면 도착 칸 진입만으로 종료(경유지), 지정 시 포트 스텁까지 검사(최종 구간)
  */
-function astar(
+function astarLeg(
   start: { x: number; y: number }, startAxis: Axis,
-  end: { x: number; y: number }, endAxis: Axis,
-  blocked: Set<string>, occ: Map<string, CellUse>,
-): { x: number; y: number }[] | null {
-  const occBits = (x: number, y: number): number => occ.get(cellKey(x, y))?.bits ?? 0;
+  end: { x: number; y: number }, endAxis: Axis | null,
+  blocked: Set<string>, otherBits: BitsFn, ownBits: BitsFn,
+  checkStart: boolean,
+): LegResult | null {
   const passable = (x: number, y: number, a: Axis): boolean => {
     if (blocked.has(cellKey(x, y))) return false;
-    const b = occBits(x, y);
-    return (b & bit(a)) === 0 && b !== 3;
+    const ob = otherBits(x, y);
+    if ((ob & bit(a)) !== 0 || ob === 3) return false;
+    if ((ownBits(x, y) & bit(a)) !== 0) return false;
+    return true;
   };
 
-  // 시작 칸: 포트 스텁(startAxis)이 점유 가능해야 함
-  if (!passable(start.x, start.y, startAxis)) return null;
+  if (checkStart && !passable(start.x, start.y, startAxis)) return null;
 
   if (start.x === end.x && start.y === end.y) {
-    const need = bit(startAxis) | bit(endAxis);
-    const b = occBits(start.x, start.y);
-    if ((b & need) !== 0 || (b !== 0 && need === 3)) return null;
-    return [start];
+    if (endAxis !== null && endAxis !== startAxis) {
+      const need = bit(startAxis) | bit(endAxis);
+      const ob = otherBits(start.x, start.y);
+      if ((ob & need) !== 0 || ob !== 0) return null; // 모서리 칸은 빈 칸이어야
+      if ((ownBits(start.x, start.y) & bit(endAxis)) !== 0) return null;
+    } else if (endAxis !== null) {
+      if ((otherBits(start.x, start.y) & bit(endAxis)) !== 0) return null;
+    }
+    return { cells: [{ ...start }], endAxis: endAxis ?? startAxis };
   }
 
   const minX = Math.min(start.x, end.x) - MARGIN;
@@ -156,14 +174,17 @@ function astar(
   while (heap.size && expanded < NODE_CAP) {
     const cur = heap.pop()!;
     const { x, y, a } = fromIdx(cur.i);
-    if (cur.f > g[cur.i] + h(x, y) + 1e-9) continue; // 오래된 항목
+    if (cur.f > g[cur.i] + h(x, y) + 1e-9) continue;
     expanded++;
 
     if (x === end.x && y === end.y) {
+      if (endAxis === null) { goalIdx = cur.i; break; }
       // 도착 칸에 포트 스텁(endAxis)까지 얹을 수 있는지 확인
       const need = bit(a) | bit(endAxis);
-      const b = occBits(x, y);
-      if ((b & bit(endAxis)) === 0 && !(b !== 0 && need === 3)) { goalIdx = cur.i; break; }
+      const ob = otherBits(x, y);
+      const okOther = (ob & bit(endAxis)) === 0 && !(ob !== 0 && need === 3);
+      const okOwn = (ownBits(x, y) & bit(endAxis)) === 0;
+      if (okOther && okOwn) { goalIdx = cur.i; break; }
       continue; // 다른 진입 축으로 재시도 여지
     }
 
@@ -173,7 +194,7 @@ function astar(
       if (nx < minX || nx > maxX || ny < minY || ny > maxY) continue;
       if (d.a !== a) {
         // 방향 전환 → 현재 칸이 모서리가 됨: 다른 연결이 점유한 칸에서는 불가
-        if (occBits(x, y) !== 0) continue;
+        if (otherBits(x, y) !== 0) continue;
       }
       if (!passable(nx, ny, d.a)) continue;
       const ni = idx(nx, ny, d.a);
@@ -187,6 +208,7 @@ function astar(
   }
   if (goalIdx < 0) return null;
 
+  const finalAxis = fromIdx(goalIdx).a;
   const cellsRev: { x: number; y: number }[] = [];
   for (let i = goalIdx; i >= 0; i = parent[i]) {
     const { x, y } = fromIdx(i);
@@ -194,7 +216,48 @@ function astar(
       cellsRev.push({ x, y });
     }
   }
-  return cellsRev.reverse();
+  return { cells: cellsRev.reverse(), endAxis: finalAxis };
+}
+
+/**
+ * 시작 포트 → 경유지들 → 도착 지점을 구간별로 이어 전체 경로를 만든다.
+ * endSpec.axis가 null이면 도착 지점은 자유 칸(프리뷰), 지정 시 반대 포트(최종 연결).
+ */
+export function routeThrough(
+  A: Anchor,
+  endSpec: { cell: { x: number; y: number }; axis: Axis | null },
+  waypoints: { x: number; y: number }[],
+  blocked: Set<string>,
+  otherOcc: Map<string, CellUse>,
+): { x: number; y: number }[] | null {
+  const otherBits: BitsFn = (x, y) => otherOcc.get(cellKey(x, y))?.bits ?? 0;
+  const own = new Map<string, number>();
+  const ownBits: BitsFn = (x, y) => own.get(cellKey(x, y)) ?? 0;
+  const addOwnSegs = (cells: { x: number; y: number }[]): void => {
+    for (let i = 0; i < cells.length - 1; i++) {
+      const a: Axis = cells[i + 1].x !== cells[i].x ? 'h' : 'v';
+      for (const c of [cells[i], cells[i + 1]]) {
+        const k = cellKey(c.x, c.y);
+        own.set(k, (own.get(k) ?? 0) | bit(a));
+      }
+    }
+  };
+
+  const targets = [...waypoints.map((w) => ({ cell: w, axis: null as Axis | null })), endSpec];
+  let cells: { x: number; y: number }[] = [];
+  let cursor = A.cell;
+  let axis = A.axis;
+
+  for (let i = 0; i < targets.length; i++) {
+    const t = targets[i];
+    const leg = astarLeg(cursor, axis, t.cell, t.axis, blocked, otherBits, ownBits, i === 0);
+    if (!leg) return null;
+    addOwnSegs(leg.cells);
+    cells = cells.length ? cells.concat(leg.cells.slice(1)) : leg.cells;
+    cursor = t.cell;
+    axis = leg.endAxis;
+  }
+  return cells;
 }
 
 function markUsage(
@@ -231,7 +294,7 @@ export function facilityCells(state: LayoutState): Set<string> {
 /** 모든 연결을 id 순서로 라우팅 (결정적). 설비/기존 라인 변경 시마다 다시 호출 */
 export function computeRoutes(state: LayoutState): RouteInfo {
   const info = emptyRouteInfo();
-  const blocked = facilityCells(state);
+  info.blocked = facilityCells(state);
   const modById = (id: number): ModuleInst | undefined => state.modules.find((m) => m.id === id);
 
   for (const c of [...state.connections].sort((a, b) => a.id - b.id)) {
@@ -247,7 +310,7 @@ export function computeRoutes(state: LayoutState): RouteInfo {
     }
     const transport: Transport = portDef(fm.typeId, c.fromPort)?.transport ?? 'belt';
     const occ = transport === 'pipe' ? info.pipeUse : info.beltUse;
-    const cells = astar(A.cell, A.axis, B.cell, B.axis, blocked, occ);
+    const cells = routeThrough(A, { cell: B.cell, axis: B.axis }, c.waypoints ?? [], info.blocked, occ);
     if (!cells) {
       info.polys.set(c.id, null);
       info.cells.set(c.id, null);
