@@ -821,10 +821,19 @@ export function startApp(): void {
       if (t.powerRange && t.powerRange > 0) html += ` · 범위 ${t.powerRange}m`;
       else if (t.powerDraw && t.powerDraw > 0) html += ` · 전력 ${t.powerDraw}`;
       html += `</span>`;
-      const ioTxt = (p: { resource: string; rate: number; transport?: string }) =>
-        `${esc(p.resource === 'any' ? '모든 리소스' : p.resource)}${p.transport === 'pipe' ? '💧' : ''} ${p.rate}/분`;
-      if (t.inputs?.length) html += `<br><span class="dim">입력:</span> ` + t.inputs.map(ioTxt).join(', ');
-      if (t.outputs?.length) html += `<br><span class="dim">출력:</span> ` + t.outputs.map(ioTxt).join(', ');
+      const ioTxt = (arr: { resource: string; rate: number; transport?: string }[] | undefined) => {
+        const seen = new Map<string, { n: number; p: { resource: string; rate: number; transport?: string } }>();
+        for (const p of arr ?? []) {
+          const k = `${p.resource}|${p.transport ?? 'belt'}`;
+          const e = seen.get(k);
+          if (e) e.n++;
+          else seen.set(k, { n: 1, p });
+        }
+        return [...seen.values()].map(({ n, p }) =>
+          `${esc(p.resource === 'any' ? '자유 포트' : p.resource)}${p.transport === 'pipe' ? '💧' : ''}${n > 1 ? `×${n}` : ''}${p.resource === 'any' ? '' : ` ${p.rate}/분`}`).join(', ');
+      };
+      if (t.inputs?.length) html += `<br><span class="dim">입력:</span> ` + ioTxt(t.inputs);
+      if (t.outputs?.length) html += `<br><span class="dim">출력:</span> ` + ioTxt(t.outputs);
       if (powerInfo.unpowered.has(m.id)) html += `<br><span class="bad">⚡ 전력 범위 밖!</span>`;
       for (const w of flowInfo.modWarn[m.id] ?? []) html += `<br><span class="warn">⚠️ ${esc(w)}</span>`;
     } else if (hover.kind === 'conn' && hover.id !== undefined) {
@@ -918,29 +927,53 @@ export function startApp(): void {
     else if (t.powerDraw && t.powerDraw > 0) html += `<div style="color:var(--text-dim)">전력 소비량: ${t.powerDraw}</div>`;
     if (t.maxPerBase) html += `<div style="color:var(--text-dim)">최대 배치 ${t.maxPerBase}개 (연구로 확장)</div>`;
 
+    // 같은 리소스의 여러 포트 = 병렬 레인 → 리소스 단위로 묶어 표시
+    interface IoGroup { resource: string; rate: number; transport?: string; portIdx: number[] }
+    const groupIo = (arr: typeof t.inputs): IoGroup[] => {
+      const gs: IoGroup[] = [];
+      (arr ?? []).forEach((p, i) => {
+        const key = `${p.resource}|${p.transport ?? 'belt'}`;
+        const g = gs.find((x) => `${x.resource}|${x.transport ?? 'belt'}` === key);
+        if (g) g.portIdx.push(i);
+        else gs.push({ resource: p.resource, rate: p.rate, transport: p.transport, portIdx: [i] });
+      });
+      return gs;
+    };
     if (t.inputs?.length) {
       html += `<div class="sect"><div class="sect-title">입력 (수요)</div>`;
-      t.inputs.forEach((inp, i) => {
-        const ics = flowInfo.inByPort[`${m.id}|in:${i}`] ?? [];
+      for (const g of groupIo(t.inputs)) {
+        const ics = g.portIdx.flatMap((i) => flowInfo.inByPort[`${m.id}|in:${i}`] ?? []);
         let supply = 0;
         for (const ic of ics) {
           const f = flowInfo.flows[ic.id] ?? {};
-          supply += inp.resource === 'any'
+          supply += g.resource === 'any'
             ? Object.values(f).reduce((a, b) => a + b, 0)
-            : f[inp.resource] ?? 0;
+            : (f[g.resource] ?? 0) + (f.any ?? 0);
         }
-        const short = ics.length > 0 && inp.resource !== 'any' && supply < inp.rate - 1e-6;
+        const label = g.resource === 'any' ? '자유 입력' : g.resource;
+        const ports = g.portIdx.length > 1 ? ` ×${g.portIdx.length}` : '';
+        if (g.resource === 'any') {
+          html += `<div class="io-row"><span>${esc(label)}${g.transport === 'pipe' ? ' 💧' : ''}${ports}</span>
+            <span class="rate">${ics.length ? `유입 ${round1(supply)}/분` : '미연결'}</span></div>`;
+          continue;
+        }
+        const short = ics.length > 0 && supply < g.rate - 1e-6;
         const supplyTxt = ics.length ? ` (공급 ${round1(supply)})` : ' (미연결)';
         html += `<div class="io-row ${short ? 'short' : ''}">
-          <span>${esc(inp.resource === 'any' ? '모든 리소스' : inp.resource)}${inp.transport === 'pipe' ? ' 💧' : ''}</span>
-          <span class="rate">${inp.rate}/분${supplyTxt}</span></div>`;
-      });
+          <span>${esc(label)}${g.transport === 'pipe' ? ' 💧' : ''}${ports}</span>
+          <span class="rate">${g.rate}/분${supplyTxt}</span></div>`;
+      }
       html += `</div>`;
     }
     if (t.outputs?.length) {
       html += `<div class="sect"><div class="sect-title">출력 (생산)</div>`;
-      for (const o of t.outputs) {
-        html += `<div class="io-row"><span>${esc(o.resource === 'any' ? '모든 리소스' : o.resource)}${o.transport === 'pipe' ? ' 💧' : ''}</span><span class="rate">${o.rate}/분</span></div>`;
+      for (const g of groupIo(t.outputs)) {
+        const label = g.resource === 'any' ? '자유 출력' : g.resource;
+        const ports = g.portIdx.length > 1 ? ` ×${g.portIdx.length}` : '';
+        const rateTxt = g.resource === 'any'
+          ? (g.rate > 0 ? `포트당 최대 ${g.rate}/분` : '—')
+          : `${g.rate}/분`;
+        html += `<div class="io-row"><span>${esc(label)}${g.transport === 'pipe' ? ' 💧' : ''}${ports}</span><span class="rate">${rateTxt}</span></div>`;
       }
       html += `</div>`;
     }

@@ -1,7 +1,7 @@
 {
   "version": 2,
   "metersPerCell": 4,
-  "note": "설비/자원 명칭은 한국어 정식 서비스 기준(나무위키 「명일방주: 엔드필드/설비」 대조). 생산 속도(개/분)·footprint·포트 위치는 공식 미공개라 대략치이며 자유롭게 수정 가능. 표준 라인 = 컨베이어 벨트 2초당 1개 = 30/분, 파이프 = 1초당 2개 = 120/분. 포트 필드: transport(belt|pipe, 생략=belt), side(N|E|S|W)+pos(변 위 칸 번호, 생략=자동 배치). image는 public/ 기준 상대 경로이며 아이콘 이미지는 ⓒ Hypergryph/Gryphline (Endfield Talos Wiki 출처).",
+  "note": "설비/자원 명칭은 한국어 정식 서비스 기준(나무위키 대조). footprint·포트 개수/위치/종류(벨트·파이프)·전력 소비량은 EnKAD(enka.network Endfield 플래너)의 게임 클라이언트 추출 데이터 기준 실측값. 분당 생산 속도만 커뮤니티 추정치(표준 라인 30/분). 같은 리소스가 여러 포트에 있으면 설비 단위로 합산 처리(포트는 병렬 레인). image는 public/ 기준 상대 경로, 아이콘 이미지는 ⓒ Hypergryph/Gryphline (Endfield Talos Wiki 출처).",
   "categories": {
     "자원 채집": {
       "color": "#d97706"
@@ -38,15 +38,29 @@
       "category": "자원 채집",
       "icon": "⛏️",
       "footprint": {
-        "w": 2,
-        "h": 2
+        "w": 3,
+        "h": 3
       },
       "powerDraw": 0,
       "inputs": [],
       "outputs": [
         {
           "resource": "오리지늄 광물",
-          "rate": 30
+          "rate": 30,
+          "side": "N",
+          "pos": 0
+        },
+        {
+          "resource": "오리지늄 광물",
+          "rate": 30,
+          "side": "N",
+          "pos": 1
+        },
+        {
+          "resource": "오리지늄 광물",
+          "rate": 30,
+          "side": "N",
+          "pos": 2
         }
       ],
       "note": "오리지늄 자체 에너지로 무전력 가동. 창고 전송 기능 없음(튜토리얼용).",
@@ -58,19 +72,29 @@
       "category": "자원 채집",
       "icon": "⚡",
       "footprint": {
-        "w": 2,
-        "h": 2
+        "w": 3,
+        "h": 3
       },
       "powerDraw": 5,
       "inputs": [],
       "outputs": [
         {
           "resource": "오리지늄 광물",
-          "rate": 30
+          "rate": 30,
+          "side": "N",
+          "pos": 0
         },
         {
           "resource": "자수정 광석",
-          "rate": 30
+          "rate": 30,
+          "side": "N",
+          "pos": 1
+        },
+        {
+          "resource": "오리지늄 광물",
+          "rate": 30,
+          "side": "N",
+          "pos": 2
         }
       ],
       "note": "오리지늄·자수정 채굴 가능(실제로는 설치한 광맥 종류에 따라 택1). 채굴물 자동 창고 전송.",
@@ -82,15 +106,29 @@
       "category": "자원 채집",
       "icon": "🔩",
       "footprint": {
-        "w": 2,
-        "h": 2
+        "w": 3,
+        "h": 3
       },
       "powerDraw": 10,
       "inputs": [],
       "outputs": [
         {
           "resource": "페리움 광석",
-          "rate": 30
+          "rate": 30,
+          "side": "N",
+          "pos": 0
+        },
+        {
+          "resource": "페리움 광석",
+          "rate": 30,
+          "side": "N",
+          "pos": 1
+        },
+        {
+          "resource": "페리움 광석",
+          "rate": 30,
+          "side": "N",
+          "pos": 2
         }
       ],
       "note": "페리움 광석 등 더 깊은 광층 채굴. 오리지늄/자수정도 캘 수 있으나 성능 동일.",
@@ -102,8 +140,8 @@
       "category": "자원 채집",
       "icon": "💧",
       "footprint": {
-        "w": 2,
-        "h": 2
+        "w": 3,
+        "h": 3
       },
       "powerDraw": 0,
       "inputs": [
@@ -111,16 +149,28 @@
           "resource": "청정수",
           "rate": 20,
           "transport": "pipe",
-          "side": "N",
-          "pos": 0
+          "side": "W",
+          "pos": 1
         }
       ],
       "outputs": [
         {
           "resource": "적동 광석",
           "rate": 30,
-          "side": "E",
+          "side": "N",
+          "pos": 0
+        },
+        {
+          "resource": "적동 광석",
+          "rate": 30,
+          "side": "N",
           "pos": 1
+        },
+        {
+          "resource": "적동 광석",
+          "rate": 30,
+          "side": "N",
+          "pos": 2
         }
       ],
       "note": "적동 광석 채굴. 전력 대신 청정수 공급 필요. 양수기 1대로 채굴기 3대 가동 가능.",
@@ -132,8 +182,8 @@
       "category": "자원 채집",
       "icon": "🚰",
       "footprint": {
-        "w": 2,
-        "h": 2
+        "w": 3,
+        "h": 3
       },
       "powerDraw": 10,
       "inputs": [],
@@ -141,7 +191,9 @@
         {
           "resource": "청정수",
           "rate": 60,
-          "transport": "pipe"
+          "transport": "pipe",
+          "side": "E",
+          "pos": 1
         }
       ],
       "note": "물과 인접한 땅에 설치. 1초당 1단위(60/분) 양수 — 2초당 1단위를 쓰는 설비 2대 커버.",
@@ -153,8 +205,8 @@
       "category": "자원 채집",
       "icon": "🧪",
       "footprint": {
-        "w": 2,
-        "h": 2
+        "w": 3,
+        "h": 3
       },
       "powerDraw": 20,
       "inputs": [],
@@ -162,7 +214,9 @@
         {
           "resource": "산성 침적물",
           "rate": 60,
-          "transport": "pipe"
+          "transport": "pipe",
+          "side": "E",
+          "pos": 1
         }
       ],
       "note": "부식성 액체(산성 침적물)를 퍼올릴 수 있는 강화 양수기.",
@@ -181,13 +235,55 @@
       "inputs": [
         {
           "resource": "자수정 광석",
-          "rate": 30
+          "rate": 30,
+          "side": "S",
+          "pos": 0
+        },
+        {
+          "resource": "자수정 광석",
+          "rate": 30,
+          "side": "S",
+          "pos": 1
+        },
+        {
+          "resource": "자수정 광석",
+          "rate": 30,
+          "side": "S",
+          "pos": 2
+        },
+        {
+          "resource": "any",
+          "rate": 0,
+          "transport": "pipe",
+          "side": "W",
+          "pos": 1
         }
       ],
       "outputs": [
         {
           "resource": "정련 자수정",
-          "rate": 30
+          "rate": 30,
+          "side": "N",
+          "pos": 0
+        },
+        {
+          "resource": "정련 자수정",
+          "rate": 30,
+          "side": "N",
+          "pos": 1
+        },
+        {
+          "resource": "정련 자수정",
+          "rate": 30,
+          "side": "N",
+          "pos": 2
+        },
+        {
+          "resource": "any",
+          "rate": 0,
+          "transport": "pipe",
+          "side": "E",
+          "pos": 1
         }
       ],
       "note": "광물 정련·식물 탄화 등 대부분 공정의 첫 설비. 레시피 다양(오리지늄/페리움/적동, 카본 등) — 데이터 수정으로 변경.",
@@ -206,13 +302,41 @@
       "inputs": [
         {
           "resource": "정련 오리지늄",
-          "rate": 30
+          "rate": 30,
+          "side": "S",
+          "pos": 0
+        },
+        {
+          "resource": "정련 오리지늄",
+          "rate": 30,
+          "side": "S",
+          "pos": 1
+        },
+        {
+          "resource": "정련 오리지늄",
+          "rate": 30,
+          "side": "S",
+          "pos": 2
         }
       ],
       "outputs": [
         {
           "resource": "오리지늄 가루",
-          "rate": 30
+          "rate": 30,
+          "side": "N",
+          "pos": 0
+        },
+        {
+          "resource": "오리지늄 가루",
+          "rate": 30,
+          "side": "N",
+          "pos": 1
+        },
+        {
+          "resource": "오리지늄 가루",
+          "rate": 30,
+          "side": "N",
+          "pos": 2
         }
       ],
       "note": "광물·식물을 가루로 분쇄. 광물은 가루 1개, 식물/카본은 2~3개 산출. 자수정·페리움·적동은 정련품만 분쇄 가능.",
@@ -231,13 +355,41 @@
       "inputs": [
         {
           "resource": "정련 자수정",
-          "rate": 30
+          "rate": 30,
+          "side": "S",
+          "pos": 0
+        },
+        {
+          "resource": "정련 자수정",
+          "rate": 30,
+          "side": "S",
+          "pos": 1
+        },
+        {
+          "resource": "정련 자수정",
+          "rate": 30,
+          "side": "S",
+          "pos": 2
         }
       ],
       "outputs": [
         {
           "resource": "자수정 부품",
-          "rate": 30
+          "rate": 30,
+          "side": "N",
+          "pos": 0
+        },
+        {
+          "resource": "자수정 부품",
+          "rate": 30,
+          "side": "N",
+          "pos": 1
+        },
+        {
+          "resource": "자수정 부품",
+          "rate": 30,
+          "side": "N",
+          "pos": 2
         }
       ],
       "note": "정련 광물 → 부품. 자수정/페리움/강철 부품은 협곡 배터리 재료.",
@@ -256,13 +408,48 @@
       "inputs": [
         {
           "resource": "정련 오리지늄",
-          "rate": 60
+          "rate": 60,
+          "side": "S",
+          "pos": 0
+        },
+        {
+          "resource": "정련 오리지늄",
+          "rate": 60,
+          "side": "S",
+          "pos": 1
+        },
+        {
+          "resource": "정련 오리지늄",
+          "rate": 60,
+          "side": "S",
+          "pos": 2
+        },
+        {
+          "resource": "any",
+          "rate": 0,
+          "transport": "pipe",
+          "side": "W",
+          "pos": 1
         }
       ],
       "outputs": [
         {
           "resource": "병",
-          "rate": 30
+          "rate": 30,
+          "side": "N",
+          "pos": 0
+        },
+        {
+          "resource": "병",
+          "rate": 30,
+          "side": "N",
+          "pos": 1
+        },
+        {
+          "resource": "병",
+          "rate": 30,
+          "side": "N",
+          "pos": 2
         }
       ],
       "note": "정련 광물 2개 → 병 1개. 최대 효율은 정련로 2라인 입력.",
@@ -274,20 +461,79 @@
       "category": "기초 생산",
       "icon": "🌾",
       "footprint": {
-        "w": 3,
-        "h": 3
+        "w": 5,
+        "h": 5
       },
       "powerDraw": 20,
       "inputs": [
         {
           "resource": "씨앗",
-          "rate": 30
+          "rate": 30,
+          "side": "S",
+          "pos": 0
+        },
+        {
+          "resource": "씨앗",
+          "rate": 30,
+          "side": "S",
+          "pos": 1
+        },
+        {
+          "resource": "씨앗",
+          "rate": 30,
+          "side": "S",
+          "pos": 2
+        },
+        {
+          "resource": "씨앗",
+          "rate": 30,
+          "side": "S",
+          "pos": 3
+        },
+        {
+          "resource": "씨앗",
+          "rate": 30,
+          "side": "S",
+          "pos": 4
+        },
+        {
+          "resource": "any",
+          "rate": 0,
+          "transport": "pipe",
+          "side": "W",
+          "pos": 2
         }
       ],
       "outputs": [
         {
           "resource": "식물",
-          "rate": 30
+          "rate": 30,
+          "side": "N",
+          "pos": 0
+        },
+        {
+          "resource": "식물",
+          "rate": 30,
+          "side": "N",
+          "pos": 1
+        },
+        {
+          "resource": "식물",
+          "rate": 30,
+          "side": "N",
+          "pos": 2
+        },
+        {
+          "resource": "식물",
+          "rate": 30,
+          "side": "N",
+          "pos": 3
+        },
+        {
+          "resource": "식물",
+          "rate": 30,
+          "side": "N",
+          "pos": 4
         }
       ],
       "note": "협곡 식물은 씨앗 1 → 식물 1. 무릉 식물은 액체 모드(물 공급)로 씨앗 1 → 식물 2.",
@@ -299,20 +545,72 @@
       "category": "기초 생산",
       "icon": "🌱",
       "footprint": {
-        "w": 3,
-        "h": 3
+        "w": 5,
+        "h": 5
       },
       "powerDraw": 10,
       "inputs": [
         {
           "resource": "식물",
-          "rate": 30
+          "rate": 30,
+          "side": "S",
+          "pos": 0
+        },
+        {
+          "resource": "식물",
+          "rate": 30,
+          "side": "S",
+          "pos": 1
+        },
+        {
+          "resource": "식물",
+          "rate": 30,
+          "side": "S",
+          "pos": 2
+        },
+        {
+          "resource": "식물",
+          "rate": 30,
+          "side": "S",
+          "pos": 3
+        },
+        {
+          "resource": "식물",
+          "rate": 30,
+          "side": "S",
+          "pos": 4
         }
       ],
       "outputs": [
         {
           "resource": "씨앗",
-          "rate": 60
+          "rate": 60,
+          "side": "N",
+          "pos": 0
+        },
+        {
+          "resource": "씨앗",
+          "rate": 60,
+          "side": "N",
+          "pos": 1
+        },
+        {
+          "resource": "씨앗",
+          "rate": 60,
+          "side": "N",
+          "pos": 2
+        },
+        {
+          "resource": "씨앗",
+          "rate": 60,
+          "side": "N",
+          "pos": 3
+        },
+        {
+          "resource": "씨앗",
+          "rate": 60,
+          "side": "N",
+          "pos": 4
         }
       ],
       "note": "협곡 식물 1 → 씨앗 2. 재배기 2 + 씨앗 추출기 1(재씨재)로 식물 무한 순환 라인 구성 가능.",
@@ -332,7 +630,9 @@
         {
           "resource": "오염수",
           "rate": 30,
-          "transport": "pipe"
+          "transport": "pipe",
+          "side": "W",
+          "pos": 1
         }
       ],
       "outputs": [],
@@ -345,20 +645,84 @@
       "category": "합성 및 제작",
       "icon": "🛡️",
       "footprint": {
-        "w": 3,
-        "h": 3
+        "w": 6,
+        "h": 4
       },
       "powerDraw": 10,
       "inputs": [
         {
           "resource": "정련 오리지늄",
-          "rate": 30
+          "rate": 30,
+          "side": "S",
+          "pos": 0
+        },
+        {
+          "resource": "정련 오리지늄",
+          "rate": 30,
+          "side": "S",
+          "pos": 1
+        },
+        {
+          "resource": "정련 오리지늄",
+          "rate": 30,
+          "side": "S",
+          "pos": 2
+        },
+        {
+          "resource": "정련 오리지늄",
+          "rate": 30,
+          "side": "S",
+          "pos": 3
+        },
+        {
+          "resource": "정련 오리지늄",
+          "rate": 30,
+          "side": "S",
+          "pos": 4
+        },
+        {
+          "resource": "정련 오리지늄",
+          "rate": 30,
+          "side": "S",
+          "pos": 5
         }
       ],
       "outputs": [
         {
           "resource": "장비 부품",
-          "rate": 15
+          "rate": 15,
+          "side": "N",
+          "pos": 0
+        },
+        {
+          "resource": "장비 부품",
+          "rate": 15,
+          "side": "N",
+          "pos": 1
+        },
+        {
+          "resource": "장비 부품",
+          "rate": 15,
+          "side": "N",
+          "pos": 2
+        },
+        {
+          "resource": "장비 부품",
+          "rate": 15,
+          "side": "N",
+          "pos": 3
+        },
+        {
+          "resource": "장비 부품",
+          "rate": 15,
+          "side": "N",
+          "pos": 4
+        },
+        {
+          "resource": "장비 부품",
+          "rate": 15,
+          "side": "N",
+          "pos": 5
         }
       ],
       "note": "오퍼레이터 방어구용 장비 부품 생산. 티어별 레시피 다양 — 데이터 수정으로 변경.",
@@ -370,24 +734,91 @@
       "category": "합성 및 제작",
       "icon": "💊",
       "footprint": {
-        "w": 3,
-        "h": 3
+        "w": 6,
+        "h": 4
       },
       "powerDraw": 20,
       "inputs": [
         {
           "resource": "식물 가루",
-          "rate": 30
+          "rate": 30,
+          "side": "S",
+          "pos": 0
         },
         {
           "resource": "병",
-          "rate": 30
+          "rate": 30,
+          "side": "S",
+          "pos": 1
+        },
+        {
+          "resource": "식물 가루",
+          "rate": 30,
+          "side": "S",
+          "pos": 2
+        },
+        {
+          "resource": "병",
+          "rate": 30,
+          "side": "S",
+          "pos": 3
+        },
+        {
+          "resource": "식물 가루",
+          "rate": 30,
+          "side": "S",
+          "pos": 4
+        },
+        {
+          "resource": "병",
+          "rate": 30,
+          "side": "S",
+          "pos": 5
+        },
+        {
+          "resource": "any",
+          "rate": 0,
+          "transport": "pipe",
+          "side": "W",
+          "pos": 2
         }
       ],
       "outputs": [
         {
           "resource": "치료 아이템",
-          "rate": 30
+          "rate": 30,
+          "side": "N",
+          "pos": 0
+        },
+        {
+          "resource": "치료 아이템",
+          "rate": 30,
+          "side": "N",
+          "pos": 1
+        },
+        {
+          "resource": "치료 아이템",
+          "rate": 30,
+          "side": "N",
+          "pos": 2
+        },
+        {
+          "resource": "치료 아이템",
+          "rate": 30,
+          "side": "N",
+          "pos": 3
+        },
+        {
+          "resource": "치료 아이템",
+          "rate": 30,
+          "side": "N",
+          "pos": 4
+        },
+        {
+          "resource": "치료 아이템",
+          "rate": 30,
+          "side": "N",
+          "pos": 5
         }
       ],
       "note": "식물 가루 + 병 → 치료 아이템. 무릉에서는 빈 병에 액체 주입 용도.",
@@ -399,24 +830,84 @@
       "category": "합성 및 제작",
       "icon": "📦",
       "footprint": {
-        "w": 3,
-        "h": 3
+        "w": 6,
+        "h": 4
       },
       "powerDraw": 20,
       "inputs": [
         {
           "resource": "자수정 부품",
-          "rate": 30
+          "rate": 30,
+          "side": "S",
+          "pos": 0
         },
         {
           "resource": "고밀도 오리지늄 가루",
-          "rate": 30
+          "rate": 30,
+          "side": "S",
+          "pos": 1
+        },
+        {
+          "resource": "자수정 부품",
+          "rate": 30,
+          "side": "S",
+          "pos": 2
+        },
+        {
+          "resource": "고밀도 오리지늄 가루",
+          "rate": 30,
+          "side": "S",
+          "pos": 3
+        },
+        {
+          "resource": "자수정 부품",
+          "rate": 30,
+          "side": "S",
+          "pos": 4
+        },
+        {
+          "resource": "고밀도 오리지늄 가루",
+          "rate": 30,
+          "side": "S",
+          "pos": 5
         }
       ],
       "outputs": [
         {
           "resource": "협곡 배터리",
-          "rate": 6
+          "rate": 6,
+          "side": "N",
+          "pos": 0
+        },
+        {
+          "resource": "협곡 배터리",
+          "rate": 6,
+          "side": "N",
+          "pos": 1
+        },
+        {
+          "resource": "협곡 배터리",
+          "rate": 6,
+          "side": "N",
+          "pos": 2
+        },
+        {
+          "resource": "협곡 배터리",
+          "rate": 6,
+          "side": "N",
+          "pos": 3
+        },
+        {
+          "resource": "협곡 배터리",
+          "rate": 6,
+          "side": "N",
+          "pos": 4
+        },
+        {
+          "resource": "협곡 배터리",
+          "rate": 6,
+          "side": "N",
+          "pos": 5
         }
       ],
       "note": "배터리·공업 폭발물·무릉 치료 아이템 생산. 배터리 1라인 생산 시간 10초(=6/분).",
@@ -428,24 +919,84 @@
       "category": "합성 및 제작",
       "icon": "🌀",
       "footprint": {
-        "w": 3,
-        "h": 3
+        "w": 6,
+        "h": 4
       },
       "powerDraw": 50,
       "inputs": [
         {
           "resource": "오리지늄 가루",
-          "rate": 60
+          "rate": 60,
+          "side": "S",
+          "pos": 0
         },
         {
           "resource": "샌드리프 가루",
-          "rate": 30
+          "rate": 30,
+          "side": "S",
+          "pos": 1
+        },
+        {
+          "resource": "오리지늄 가루",
+          "rate": 60,
+          "side": "S",
+          "pos": 2
+        },
+        {
+          "resource": "샌드리프 가루",
+          "rate": 30,
+          "side": "S",
+          "pos": 3
+        },
+        {
+          "resource": "오리지늄 가루",
+          "rate": 60,
+          "side": "S",
+          "pos": 4
+        },
+        {
+          "resource": "샌드리프 가루",
+          "rate": 30,
+          "side": "S",
+          "pos": 5
         }
       ],
       "outputs": [
         {
           "resource": "고밀도 오리지늄 가루",
-          "rate": 30
+          "rate": 30,
+          "side": "N",
+          "pos": 0
+        },
+        {
+          "resource": "고밀도 오리지늄 가루",
+          "rate": 30,
+          "side": "N",
+          "pos": 1
+        },
+        {
+          "resource": "고밀도 오리지늄 가루",
+          "rate": 30,
+          "side": "N",
+          "pos": 2
+        },
+        {
+          "resource": "고밀도 오리지늄 가루",
+          "rate": 30,
+          "side": "N",
+          "pos": 3
+        },
+        {
+          "resource": "고밀도 오리지늄 가루",
+          "rate": 30,
+          "side": "N",
+          "pos": 4
+        },
+        {
+          "resource": "고밀도 오리지늄 가루",
+          "rate": 30,
+          "side": "N",
+          "pos": 5
         }
       ],
       "note": "가루 2 + 샌드리프 가루 1 → 고밀도 가루. 샌드리프 1라인으로 연마기 3대 운영 가능.",
@@ -457,14 +1008,27 @@
       "category": "합성 및 제작",
       "icon": "⚗️",
       "footprint": {
-        "w": 3,
-        "h": 3
+        "w": 5,
+        "h": 5
       },
       "powerDraw": 50,
       "inputs": [
         {
           "resource": "식물 가루",
           "rate": 30,
+          "side": "S",
+          "pos": 1
+        },
+        {
+          "resource": "식물 가루",
+          "rate": 30,
+          "side": "S",
+          "pos": 3
+        },
+        {
+          "resource": "청정수",
+          "rate": 30,
+          "transport": "pipe",
           "side": "W",
           "pos": 1
         },
@@ -472,17 +1036,36 @@
           "resource": "청정수",
           "rate": 30,
           "transport": "pipe",
-          "side": "N",
-          "pos": 1
+          "side": "W",
+          "pos": 3
         }
       ],
       "outputs": [
+        {
+          "resource": "any",
+          "rate": 0,
+          "side": "N",
+          "pos": 1
+        },
+        {
+          "resource": "any",
+          "rate": 0,
+          "side": "N",
+          "pos": 3
+        },
         {
           "resource": "용액",
           "rate": 30,
           "transport": "pipe",
           "side": "E",
           "pos": 1
+        },
+        {
+          "resource": "용액",
+          "rate": 30,
+          "transport": "pipe",
+          "side": "E",
+          "pos": 3
         }
       ],
       "note": "고체+액체 화학반응(고체 2종·액체 2종 입력, 고체 1종·액체 2종 출력). 액화 용액·양정 공정의 핵심.",
@@ -494,7 +1077,7 @@
       "category": "합성 및 제작",
       "icon": "🏗️",
       "footprint": {
-        "w": 3,
+        "w": 6,
         "h": 5
       },
       "powerDraw": 100,
@@ -502,26 +1085,38 @@
         {
           "resource": "식양",
           "rate": 30,
-          "side": "W",
+          "side": "S",
           "pos": 1
+        },
+        {
+          "resource": "페리움 가루",
+          "rate": 15,
+          "side": "S",
+          "pos": 2
+        },
+        {
+          "resource": "식양",
+          "rate": 30,
+          "side": "S",
+          "pos": 3
+        },
+        {
+          "resource": "페리움 가루",
+          "rate": 15,
+          "side": "S",
+          "pos": 4
         },
         {
           "resource": "오염수",
           "rate": 15,
           "transport": "pipe",
-          "side": "N",
-          "pos": 0
+          "side": "W",
+          "pos": 1
         },
         {
           "resource": "청정수",
           "rate": 30,
           "transport": "pipe",
-          "side": "N",
-          "pos": 2
-        },
-        {
-          "resource": "페리움 가루",
-          "rate": 15,
           "side": "W",
           "pos": 3
         }
@@ -530,14 +1125,40 @@
         {
           "resource": "양정",
           "rate": 15,
-          "side": "E",
+          "side": "N",
           "pos": 1
         },
         {
           "resource": "불활성 양정 폐액",
           "rate": 30,
-          "side": "S",
+          "side": "N",
+          "pos": 2
+        },
+        {
+          "resource": "양정",
+          "rate": 15,
+          "side": "N",
+          "pos": 3
+        },
+        {
+          "resource": "불활성 양정 폐액",
+          "rate": 30,
+          "side": "N",
+          "pos": 4
+        },
+        {
+          "resource": "any",
+          "rate": 0,
+          "transport": "pipe",
+          "side": "E",
           "pos": 1
+        },
+        {
+          "resource": "any",
+          "rate": 0,
+          "transport": "pipe",
+          "side": "E",
+          "pos": 3
         }
       ],
       "note": "반응기의 대형 버전(고체 포트 4:4, 캐시 8칸). 복잡한 다단 반응을 1대로 처리. 전력 2배.",
@@ -549,8 +1170,8 @@
       "category": "합성 및 제작",
       "icon": "🌋",
       "footprint": {
-        "w": 4,
-        "h": 4
+        "w": 5,
+        "h": 5
       },
       "powerDraw": 50,
       "maxPerBase": 12,
@@ -558,23 +1179,71 @@
         {
           "resource": "카본 조각",
           "rate": 30,
-          "side": "W",
+          "side": "S",
+          "pos": 0
+        },
+        {
+          "resource": "카본 조각",
+          "rate": 30,
+          "side": "S",
           "pos": 1
+        },
+        {
+          "resource": "카본 조각",
+          "rate": 30,
+          "side": "S",
+          "pos": 2
+        },
+        {
+          "resource": "카본 조각",
+          "rate": 30,
+          "side": "S",
+          "pos": 3
+        },
+        {
+          "resource": "카본 조각",
+          "rate": 30,
+          "side": "S",
+          "pos": 4
         },
         {
           "resource": "청정수",
           "rate": 30,
           "transport": "pipe",
-          "side": "N",
-          "pos": 1
+          "side": "W",
+          "pos": 2
         }
       ],
       "outputs": [
         {
           "resource": "식양",
           "rate": 15,
-          "side": "E",
+          "side": "N",
+          "pos": 0
+        },
+        {
+          "resource": "식양",
+          "rate": 15,
+          "side": "N",
+          "pos": 1
+        },
+        {
+          "resource": "식양",
+          "rate": 15,
+          "side": "N",
           "pos": 2
+        },
+        {
+          "resource": "식양",
+          "rate": 15,
+          "side": "N",
+          "pos": 3
+        },
+        {
+          "resource": "식양",
+          "rate": 15,
+          "side": "N",
+          "pos": 4
         }
       ],
       "note": "식양(무릉 전력 물질) 생산. 최대 배치 개수 제한(연구로 확장). 기체 모드 연구 시 카본+청정수+활성 대기로 공정 단축.",
@@ -586,8 +1255,8 @@
       "category": "합성 및 제작",
       "icon": "✨",
       "footprint": {
-        "w": 3,
-        "h": 3
+        "w": 5,
+        "h": 5
       },
       "powerDraw": 50,
       "inputs": [
@@ -597,6 +1266,13 @@
           "transport": "pipe",
           "side": "W",
           "pos": 1
+        },
+        {
+          "resource": "적동 용액",
+          "rate": 30,
+          "transport": "pipe",
+          "side": "W",
+          "pos": 3
         }
       ],
       "outputs": [
@@ -611,8 +1287,8 @@
           "resource": "산성 침적물",
           "rate": 30,
           "transport": "pipe",
-          "side": "S",
-          "pos": 1
+          "side": "E",
+          "pos": 3
         }
       ],
       "note": "용액을 고순도로 정제(적동→혁동 등). 부산물(산성 침적물/청정수) 미배출 시 라인 막힘 주의.",
@@ -624,29 +1300,91 @@
       "category": "합성 및 제작",
       "icon": "🔓",
       "footprint": {
-        "w": 3,
-        "h": 3
+        "w": 6,
+        "h": 4
       },
       "powerDraw": 20,
       "inputs": [
         {
           "resource": "액체가 담긴 병",
-          "rate": 30
+          "rate": 30,
+          "side": "S",
+          "pos": 0
+        },
+        {
+          "resource": "액체가 담긴 병",
+          "rate": 30,
+          "side": "S",
+          "pos": 1
+        },
+        {
+          "resource": "액체가 담긴 병",
+          "rate": 30,
+          "side": "S",
+          "pos": 2
+        },
+        {
+          "resource": "액체가 담긴 병",
+          "rate": 30,
+          "side": "S",
+          "pos": 3
+        },
+        {
+          "resource": "액체가 담긴 병",
+          "rate": 30,
+          "side": "S",
+          "pos": 4
+        },
+        {
+          "resource": "액체가 담긴 병",
+          "rate": 30,
+          "side": "S",
+          "pos": 5
         }
       ],
       "outputs": [
         {
           "resource": "병",
           "rate": 30,
-          "side": "E",
+          "side": "N",
+          "pos": 0
+        },
+        {
+          "resource": "병",
+          "rate": 30,
+          "side": "N",
           "pos": 1
+        },
+        {
+          "resource": "병",
+          "rate": 30,
+          "side": "N",
+          "pos": 2
+        },
+        {
+          "resource": "병",
+          "rate": 30,
+          "side": "N",
+          "pos": 3
+        },
+        {
+          "resource": "병",
+          "rate": 30,
+          "side": "N",
+          "pos": 4
+        },
+        {
+          "resource": "병",
+          "rate": 30,
+          "side": "N",
+          "pos": 5
         },
         {
           "resource": "용액",
           "rate": 30,
           "transport": "pipe",
-          "side": "S",
-          "pos": 1
+          "side": "E",
+          "pos": 2
         }
       ],
       "note": "액체가 담긴 병 → 빈 병 + 액체 분리. 액체를 창고로 옮기는 우회 수단.",
@@ -984,14 +1722,136 @@
       "category": "전력 공급",
       "icon": "🏭",
       "footprint": {
-        "w": 5,
-        "h": 5
+        "w": 9,
+        "h": 9
       },
       "powerDraw": 0,
       "powerSource": true,
       "powerRange": 80,
-      "inputs": [],
-      "outputs": [],
+      "inputs": [
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "S",
+          "pos": 1
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "S",
+          "pos": 2
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "S",
+          "pos": 3
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "S",
+          "pos": 4
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "S",
+          "pos": 5
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "S",
+          "pos": 6
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "S",
+          "pos": 7
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "N",
+          "pos": 1
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "N",
+          "pos": 2
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "N",
+          "pos": 3
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "N",
+          "pos": 4
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "N",
+          "pos": 5
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "N",
+          "pos": 6
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "N",
+          "pos": 7
+        }
+      ],
+      "outputs": [
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "E",
+          "pos": 1
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "E",
+          "pos": 4
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "E",
+          "pos": 7
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "W",
+          "pos": 1
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "W",
+          "pos": 4
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "W",
+          "pos": 7
+        }
+      ],
       "note": "기지의 중심이자 전력의 원천. 여기서부터 중계기 체인으로 전력망을 확장.",
       "image": "icons/protocol_core.png"
     },
@@ -1001,14 +1861,136 @@
       "category": "전력 공급",
       "icon": "🏢",
       "footprint": {
-        "w": 4,
-        "h": 4
+        "w": 9,
+        "h": 9
       },
       "powerDraw": 0,
       "powerSource": true,
       "powerRange": 80,
-      "inputs": [],
-      "outputs": [],
+      "inputs": [
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "S",
+          "pos": 1
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "S",
+          "pos": 2
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "S",
+          "pos": 3
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "S",
+          "pos": 4
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "S",
+          "pos": 5
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "S",
+          "pos": 6
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "S",
+          "pos": 7
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "N",
+          "pos": 1
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "N",
+          "pos": 2
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "N",
+          "pos": 3
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "N",
+          "pos": 4
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "N",
+          "pos": 5
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "N",
+          "pos": 6
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "N",
+          "pos": 7
+        }
+      ],
+      "outputs": [
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "E",
+          "pos": 1
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "E",
+          "pos": 4
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "E",
+          "pos": 7
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "W",
+          "pos": 1
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "W",
+          "pos": 4
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "W",
+          "pos": 7
+        }
+      ],
       "note": "원거리 확장용 보조 코어.",
       "image": "icons/sub_core.png"
     },
@@ -1018,8 +2000,8 @@
       "category": "전력 공급",
       "icon": "📡",
       "footprint": {
-        "w": 1,
-        "h": 1
+        "w": 3,
+        "h": 3
       },
       "powerDraw": 0,
       "powerRange": 80,
@@ -1034,8 +2016,8 @@
       "category": "전력 공급",
       "icon": "🏮",
       "footprint": {
-        "w": 1,
-        "h": 1
+        "w": 3,
+        "h": 3
       },
       "powerDraw": 0,
       "powerRange": 80,
@@ -1050,8 +2032,8 @@
       "category": "전력 공급",
       "icon": "🔌",
       "footprint": {
-        "w": 1,
-        "h": 1
+        "w": 2,
+        "h": 2
       },
       "powerDraw": 0,
       "powerRange": 30,
@@ -1066,8 +2048,8 @@
       "category": "전력 공급",
       "icon": "🎐",
       "footprint": {
-        "w": 1,
-        "h": 1
+        "w": 2,
+        "h": 2
       },
       "powerDraw": 0,
       "powerRange": 30,
@@ -1089,7 +2071,15 @@
       "inputs": [
         {
           "resource": "협곡 배터리",
-          "rate": 1.5
+          "rate": 1.5,
+          "side": "S",
+          "pos": 0
+        },
+        {
+          "resource": "협곡 배터리",
+          "rate": 1.5,
+          "side": "S",
+          "pos": 1
         }
       ],
       "outputs": [],
@@ -1102,17 +2092,50 @@
       "category": "저장고 입출력",
       "icon": "🏦",
       "footprint": {
-        "w": 2,
-        "h": 2
+        "w": 3,
+        "h": 3
       },
       "powerDraw": 5,
       "inputs": [
         {
           "resource": "any",
-          "rate": 30
+          "rate": 30,
+          "side": "S",
+          "pos": 0
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "S",
+          "pos": 1
+        },
+        {
+          "resource": "any",
+          "rate": 30,
+          "side": "S",
+          "pos": 2
         }
       ],
-      "outputs": [],
+      "outputs": [
+        {
+          "resource": "any",
+          "rate": 0,
+          "side": "N",
+          "pos": 0
+        },
+        {
+          "resource": "any",
+          "rate": 0,
+          "side": "N",
+          "pos": 1
+        },
+        {
+          "resource": "any",
+          "rate": 0,
+          "side": "N",
+          "pos": 2
+        }
+      ],
       "note": "전력 공급 시 아이템을 중앙 창고로 원격 전송. 생산 라인 마무리에 배치. 생산품 1종당 1개 권장.",
       "image": "icons/protocol_storage.png"
     },
@@ -1122,14 +2145,16 @@
       "category": "저장고 입출력",
       "icon": "📥",
       "footprint": {
-        "w": 1,
+        "w": 3,
         "h": 1
       },
       "powerDraw": 0,
       "inputs": [
         {
           "resource": "any",
-          "rate": 30
+          "rate": 30,
+          "side": "S",
+          "pos": 1
         }
       ],
       "outputs": [],
@@ -1142,7 +2167,7 @@
       "category": "저장고 입출력",
       "icon": "📤",
       "footprint": {
-        "w": 1,
+        "w": 3,
         "h": 1
       },
       "powerDraw": 0,
@@ -1150,7 +2175,9 @@
       "outputs": [
         {
           "resource": "any",
-          "rate": 30
+          "rate": 30,
+          "side": "N",
+          "pos": 1
         }
       ],
       "note": "창고에 보관된 아이템을 지정해 자동으로 꺼내는 포트. 공장 원료 공급의 핵심.",
@@ -1162,8 +2189,8 @@
       "category": "저장고 입출력",
       "icon": "🛢️",
       "footprint": {
-        "w": 2,
-        "h": 2
+        "w": 3,
+        "h": 3
       },
       "powerDraw": 0,
       "passthrough": true,
@@ -1171,14 +2198,18 @@
         {
           "resource": "any",
           "rate": 120,
-          "transport": "pipe"
+          "transport": "pipe",
+          "side": "W",
+          "pos": 1
         }
       ],
       "outputs": [
         {
           "resource": "any",
           "rate": 120,
-          "transport": "pipe"
+          "transport": "pipe",
+          "side": "E",
+          "pos": 1
         }
       ],
       "note": "액체를 500단위까지 저장. 버퍼 겸 병 담기/붓기 지점.",
@@ -1190,15 +2221,17 @@
       "category": "저장고 입출력",
       "icon": "🕳️",
       "footprint": {
-        "w": 1,
-        "h": 1
+        "w": 3,
+        "h": 3
       },
       "powerDraw": 0,
       "inputs": [
         {
           "resource": "any",
           "rate": 120,
-          "transport": "pipe"
+          "transport": "pipe",
+          "side": "W",
+          "pos": 1
         }
       ],
       "outputs": [],
@@ -1211,8 +2244,8 @@
       "category": "저장고 입출력",
       "icon": "⛲",
       "footprint": {
-        "w": 1,
-        "h": 1
+        "w": 3,
+        "h": 3
       },
       "powerDraw": 0,
       "inputs": [],
@@ -1220,7 +2253,9 @@
         {
           "resource": "any",
           "rate": 120,
-          "transport": "pipe"
+          "transport": "pipe",
+          "side": "E",
+          "pos": 1
         }
       ],
       "note": "지하 암관 출구. 암관 입구와 짝으로 사용.",
@@ -1232,8 +2267,8 @@
       "category": "기능성 설비",
       "icon": "🧰",
       "footprint": {
-        "w": 1,
-        "h": 1
+        "w": 3,
+        "h": 3
       },
       "powerDraw": 5,
       "inputs": [],
@@ -1247,8 +2282,8 @@
       "category": "기능성 설비",
       "icon": "🪝",
       "footprint": {
-        "w": 1,
-        "h": 1
+        "w": 3,
+        "h": 3
       },
       "powerDraw": 5,
       "inputs": [],
@@ -1262,8 +2297,8 @@
       "category": "기능성 설비",
       "icon": "🎢",
       "footprint": {
-        "w": 1,
-        "h": 1
+        "w": 3,
+        "h": 3
       },
       "powerDraw": 5,
       "inputs": [],
@@ -1277,15 +2312,17 @@
       "category": "기능성 설비",
       "icon": "💦",
       "footprint": {
-        "w": 1,
-        "h": 1
+        "w": 3,
+        "h": 3
       },
       "powerDraw": 10,
       "inputs": [
         {
           "resource": "청정수",
           "rate": 4,
-          "transport": "pipe"
+          "transport": "pipe",
+          "side": "W",
+          "pos": 1
         }
       ],
       "outputs": [],
@@ -1298,14 +2335,17 @@
       "category": "기능성 설비",
       "icon": "🚽",
       "footprint": {
-        "w": 1,
-        "h": 1
+        "w": 3,
+        "h": 3
       },
       "powerDraw": 10,
       "inputs": [
         {
           "resource": "any",
-          "rate": 30
+          "rate": 0,
+          "transport": "pipe",
+          "side": "W",
+          "pos": 1
         }
       ],
       "outputs": [],
@@ -1332,8 +2372,8 @@
       "category": "전투 보조",
       "icon": "🎯",
       "footprint": {
-        "w": 1,
-        "h": 1
+        "w": 2,
+        "h": 2
       },
       "powerDraw": 5,
       "inputs": [],
@@ -1347,8 +2387,8 @@
       "category": "전투 보조",
       "icon": "➕",
       "footprint": {
-        "w": 1,
-        "h": 1
+        "w": 3,
+        "h": 3
       },
       "powerDraw": 5,
       "inputs": [],
@@ -1362,8 +2402,8 @@
       "category": "전투 보조",
       "icon": "💥",
       "footprint": {
-        "w": 1,
-        "h": 1
+        "w": 2,
+        "h": 2
       },
       "powerDraw": 10,
       "inputs": [],
@@ -1377,8 +2417,8 @@
       "category": "전투 보조",
       "icon": "🌩️",
       "footprint": {
-        "w": 1,
-        "h": 1
+        "w": 2,
+        "h": 2
       },
       "powerDraw": 20,
       "inputs": [],
@@ -1392,8 +2432,8 @@
       "category": "전투 보조",
       "icon": "🔭",
       "footprint": {
-        "w": 1,
-        "h": 1
+        "w": 2,
+        "h": 2
       },
       "powerDraw": 20,
       "inputs": [],
@@ -1407,8 +2447,8 @@
       "category": "전투 보조",
       "icon": "🚀",
       "footprint": {
-        "w": 2,
-        "h": 2
+        "w": 3,
+        "h": 3
       },
       "powerDraw": 20,
       "inputs": [],
