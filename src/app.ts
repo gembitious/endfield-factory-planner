@@ -10,6 +10,7 @@ import type { RouteInfo } from './routing';
 import {
   LS_THEME, decodeShareHash, deserializeInto, encodeShareHash, loadLocal, saveLocal, serialize,
 } from './persist';
+import { activeRecipe, clearIoCache, resolveIo } from './recipes';
 import { computePower } from './power';
 import type {
   FlowInfo, LayoutState, ModuleInst, PortInfo, PowerInfo,
@@ -299,7 +300,7 @@ export function startApp(): void {
   }
   function connTransport(c: { fromModuleId: number; fromPort: string }): 'belt' | 'pipe' {
     const m = modById(c.fromModuleId);
-    return (m && portDef(m.typeId, c.fromPort)?.transport) ?? 'belt';
+    return (m && portDef(m, c.fromPort)?.transport) ?? 'belt';
   }
   function drawConnections(): void {
     const s = CELL * view.scale;
@@ -889,6 +890,8 @@ export function startApp(): void {
       if (t.powerRange && t.powerRange > 0) html += ` · 범위 ${t.powerRange}m`;
       else if (t.powerDraw && t.powerDraw > 0) html += ` · 전력 ${t.powerDraw}`;
       html += `</span>`;
+      const rec = activeRecipe(m);
+      if (rec) html += `<br><span class="dim">레시피:</span> ${esc(rec.name)}`;
       const ioTxt = (arr: { resource: string; rate: number; transport?: string }[] | undefined) => {
         const seen = new Map<string, { n: number; p: { resource: string; rate: number; transport?: string } }>();
         for (const p of arr ?? []) {
@@ -900,8 +903,9 @@ export function startApp(): void {
         return [...seen.values()].map(({ n, p }) =>
           `${esc(p.resource === 'any' ? '자유 포트' : p.resource)}${p.transport === 'pipe' ? '💧' : ''}${n > 1 ? `×${n}` : ''}${p.resource === 'any' ? '' : ` ${p.rate}/분`}`).join(', ');
       };
-      if (t.inputs?.length) html += `<br><span class="dim">입력:</span> ` + ioTxt(t.inputs);
-      if (t.outputs?.length) html += `<br><span class="dim">출력:</span> ` + ioTxt(t.outputs);
+      const mio = resolveIo(m);
+      if (mio.inputs.length) html += `<br><span class="dim">입력:</span> ` + ioTxt(mio.inputs);
+      if (mio.outputs.length) html += `<br><span class="dim">출력:</span> ` + ioTxt(mio.outputs);
       if (powerInfo.unpowered.has(m.id)) html += `<br><span class="bad">⚡ 전력 범위 밖!</span>`;
       for (const w of flowInfo.modWarn[m.id] ?? []) html += `<br><span class="warn">⚠️ ${esc(w)}</span>`;
     } else if (hover.kind === 'conn' && hover.id !== undefined) {
@@ -999,6 +1003,15 @@ export function startApp(): void {
     else if (t.powerDraw && t.powerDraw > 0) html += `<div style="color:var(--text-dim)">전력 소비량: ${t.powerDraw}</div>`;
     if (t.maxPerBase) html += `<div style="color:var(--text-dim)">최대 배치 ${t.maxPerBase}개 (연구로 확장)</div>`;
 
+    // 레시피 선택
+    const act = activeRecipe(m);
+    if (t.recipes?.length && act) {
+      html += `<div class="sect"><div class="sect-title">레시피 (${t.recipes.length}종)</div>
+        <select id="recipeSel" class="recipe-sel">${t.recipes.map((r) =>
+          `<option value="${esc(r.id)}" ${r.id === act.id ? 'selected' : ''}>${esc(r.name)}</option>`).join('')}</select>
+        ${act.note ? `<div class="note-box">💡 ${esc(act.note)}</div>` : ''}</div>`;
+    }
+
     // 같은 리소스의 여러 포트 = 병렬 레인 → 리소스 단위로 묶어 표시
     interface IoGroup { resource: string; rate: number; transport?: string; portIdx: number[] }
     const groupIo = (arr: typeof t.inputs): IoGroup[] => {
@@ -1011,9 +1024,10 @@ export function startApp(): void {
       });
       return gs;
     };
-    if (t.inputs?.length) {
+    const io = resolveIo(m);
+    if (io.inputs.length) {
       html += `<div class="sect"><div class="sect-title">입력 (수요)</div>`;
-      for (const g of groupIo(t.inputs)) {
+      for (const g of groupIo(io.inputs)) {
         const ics = g.portIdx.flatMap((i) => flowInfo.inByPort[`${m.id}|in:${i}`] ?? []);
         let supply = 0;
         for (const ic of ics) {
@@ -1037,9 +1051,9 @@ export function startApp(): void {
       }
       html += `</div>`;
     }
-    if (t.outputs?.length) {
+    if (io.outputs.length) {
       html += `<div class="sect"><div class="sect-title">출력 (생산)</div>`;
-      for (const g of groupIo(t.outputs)) {
+      for (const g of groupIo(io.outputs)) {
         const label = g.resource === 'any' ? '자유 출력' : g.resource;
         const ports = g.portIdx.length > 1 ? ` ×${g.portIdx.length}` : '';
         const rateTxt = g.resource === 'any'
@@ -1059,6 +1073,14 @@ export function startApp(): void {
     el.innerHTML = html;
     $('btnRotSel').addEventListener('click', rotateTarget);
     $('btnDelSel').addEventListener('click', deleteSelected);
+    const sel = document.getElementById('recipeSel') as HTMLSelectElement | null;
+    if (sel) {
+      sel.addEventListener('change', () => {
+        m.recipeId = sel.value;
+        recompute();
+        scheduleSave();
+      });
+    }
   }
 
   /* ── 상태 바 ── */
@@ -1169,8 +1191,12 @@ export function startApp(): void {
   initEditor({
     isTypeInUse: (typeId) => state.modules.some((m) => m.typeId === typeId),
     onCatalogChanged: () => {
-      // 카탈로그 변경 후: 사라진 타입의 모듈, 유효하지 않은 포트를 참조하는 연결 정리
+      // 카탈로그 변경 후: 캐시 무효화, 사라진 타입/레시피/포트 정리
+      clearIoCache();
       state.modules = state.modules.filter((m) => F(m.typeId));
+      state.modules.forEach((mm) => {
+        if (mm.recipeId && !F(mm.typeId).recipes?.some((r) => r.id === mm.recipeId)) mm.recipeId = undefined;
+      });
       state.connections = state.connections.filter((c) => {
         const fm = modById(c.fromModuleId);
         const tm = modById(c.toModuleId);

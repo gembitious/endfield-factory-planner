@@ -1,5 +1,6 @@
 import { F } from './catalog';
 import { portDef } from './geometry';
+import { resolveIo } from './recipes';
 import type { Connection, FlowInfo, LayoutState } from './types';
 
 /**
@@ -26,7 +27,7 @@ export function computeFlows(state: LayoutState): FlowInfo {
     (inByPort[`${c.toModuleId}|${c.toPort}`] ??= []).push(c);
     const m = modById(c.fromModuleId);
     if (m && !F(m.typeId).passthrough) {
-      const p = portDef(m.typeId, c.fromPort);
+      const p = portDef(m, c.fromPort);
       if (p && p.resource !== 'any') (outByRes[`${m.id}|${p.resource}`] ??= []).push(c);
     }
   }
@@ -50,7 +51,7 @@ export function computeFlows(state: LayoutState): FlowInfo {
         for (const [r, v] of Object.entries(agg)) out[r] = v / k;
         next[c.id] = out;
       } else {
-        const p = portDef(m.typeId, c.fromPort);
+        const p = portDef(m, c.fromPort);
         if (!p) { next[c.id] = {}; continue; }
         if (p.resource === 'any') {
           const k = outByPort[`${m.id}|${c.fromPort}`].length;
@@ -71,13 +72,14 @@ export function computeFlows(state: LayoutState): FlowInfo {
   for (const m of state.modules) {
     const t = F(m.typeId);
     if (t.passthrough) continue;
+    const inputs = resolveIo(m).inputs;
     const seen = new Set<string>();
-    (t.inputs ?? []).forEach((inp, i) => {
+    inputs.forEach((inp) => {
       if (inp.resource === 'any' || seen.has(inp.resource)) return;
       seen.add(inp.resource);
       // 이 리소스가 배정된 모든 입력 포트의 유입 합산
       const ics: Connection[] = [];
-      (t.inputs ?? []).forEach((p2, j) => {
+      inputs.forEach((p2, j) => {
         if (p2.resource === inp.resource) ics.push(...(inByPort[`${m.id}|in:${j}`] ?? []));
       });
       if (!ics.length) return;

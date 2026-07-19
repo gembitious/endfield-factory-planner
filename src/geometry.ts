@@ -1,4 +1,5 @@
 import { F } from './catalog';
+import { resolveIo } from './recipes';
 import type { Connection, FacilityType, IoPort, ModuleInst, PortInfo, Side } from './types';
 
 export const ROT_SIDE: Record<Side, Side> = { N: 'E', E: 'S', S: 'W', W: 'N' };
@@ -42,6 +43,7 @@ export function canPlace(
  */
 export function getPorts(m: ModuleInst): PortInfo[] {
   const t = F(m.typeId);
+  const io = resolveIo(m); // 활성 레시피 반영된 자원 배정
   const { w: fw, h: fh } = t.footprint;
   const list: Omit<PortInfo, 'x' | 'y'>[] = [];
   const push = (arr: FacilityType['inputs'], kind: 'input' | 'output', prefix: string, defSide: Side) => {
@@ -65,8 +67,8 @@ export function getPorts(m: ModuleInst): PortInfo[] {
       });
     });
   };
-  push(t.inputs, 'input', 'in:', 'W');
-  push(t.outputs, 'output', 'out:', 'E');
+  push(io.inputs, 'input', 'in:', 'W');
+  push(io.outputs, 'output', 'out:', 'E');
 
   const steps = ((m.rot || 0) / 90) | 0;
   return list.map((p) => {
@@ -95,11 +97,11 @@ export function portByKey(m: ModuleInst, key: string): PortInfo | null {
   return getPorts(m).find((p) => p.key === key) ?? null;
 }
 
-/** 포트 키('in:2' 등)로 설비 정의의 IoPort 조회 */
-export function portDef(typeId: string, key: string): IoPort | undefined {
-  const t = F(typeId);
+/** 포트 키('in:2' 등)로 모듈의 유효 IoPort 조회 (활성 레시피 반영) */
+export function portDef(m: ModuleInst, key: string): IoPort | undefined {
+  const io = resolveIo(m);
   const [kind, idx] = key.split(':');
-  return (kind === 'in' ? t.inputs : t.outputs)?.[+idx];
+  return (kind === 'in' ? io.inputs : io.outputs)[+idx];
 }
 
 /** 연결의 직각 폴리라인 경로 (월드 셀 좌표) */

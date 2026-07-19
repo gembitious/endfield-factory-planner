@@ -13,6 +13,15 @@ export interface IoPort {
   pos?: number;
 }
 
+/** 레시피 — 설비의 입출력 자원 세트. 포트 배치는 설비 고정, 자원은 선택된 레시피에 따라 배정 */
+export interface Recipe {
+  id: string;
+  name: string;
+  inputs?: IoPort[];  // side/pos는 무시 — transport(belt/pipe)와 resource/rate만 사용
+  outputs?: IoPort[];
+  note?: string;
+}
+
 /** 설비 정의 — public/data/facilities.json에서 로드 */
 export interface FacilityType {
   id: string;
@@ -31,8 +40,11 @@ export interface FacilityType {
   passthrough?: boolean;
   maxPerBase?: number;
   note?: string;
+  /** 포트 슬롯 (위치·운송 종류는 실측 고정). recipes가 없으면 여기 적힌 resource/rate가 그대로 사용됨 */
   inputs?: IoPort[];
   outputs?: IoPort[];
+  /** 복수 레시피. 있으면 선택된 레시피(기본 = 첫 번째)의 자원이 포트 슬롯에 배정됨 */
+  recipes?: Recipe[];
 }
 
 export interface CatalogData {
@@ -50,6 +62,8 @@ export interface ModuleInst {
   x: number;
   y: number;
   rot: number; // 0 | 90 | 180 | 270
+  /** 선택된 레시피 id (설비에 recipes가 있을 때만 의미) */
+  recipeId?: string;
 }
 
 /** 벨트/파이프 연결. 포트 키는 'in:<idx>' / 'out:<idx>' */

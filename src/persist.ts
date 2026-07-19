@@ -8,7 +8,10 @@ export function serialize(state: LayoutState): SerializedLayout {
   return {
     v: 1,
     nextId: state.nextId,
-    modules: state.modules.map((m) => ({ id: m.id, typeId: m.typeId, x: m.x, y: m.y, rot: m.rot })),
+    modules: state.modules.map((m) => ({
+      id: m.id, typeId: m.typeId, x: m.x, y: m.y, rot: m.rot,
+      ...(m.recipeId ? { recipeId: m.recipeId } : {}),
+    })),
     connections: state.connections.map((c) => ({
       id: c.id, fromModuleId: c.fromModuleId, fromPort: c.fromPort,
       toModuleId: c.toModuleId, toPort: c.toPort,
@@ -24,8 +27,13 @@ export function deserializeInto(state: LayoutState, data: SerializedLayout): num
   const conns: LayoutState['connections'] = [];
   let skipped = 0;
   for (const m of data.modules) {
-    if (!F(m.typeId)) { skipped++; continue; }
-    mods.push({ id: m.id, typeId: m.typeId, x: m.x | 0, y: m.y | 0, rot: [0, 90, 180, 270].includes(m.rot) ? m.rot : 0 });
+    const t = F(m.typeId);
+    if (!t) { skipped++; continue; }
+    mods.push({
+      id: m.id, typeId: m.typeId, x: m.x | 0, y: m.y | 0,
+      rot: [0, 90, 180, 270].includes(m.rot) ? m.rot : 0,
+      recipeId: m.recipeId && t.recipes?.some((r) => r.id === m.recipeId) ? m.recipeId : undefined,
+    });
   }
   const ids = new Set(mods.map((m) => m.id));
   for (const c of data.connections ?? []) {

@@ -308,7 +308,7 @@ export function computeRoutes(state: LayoutState): RouteInfo {
       info.unrouted.add(c.id);
       continue;
     }
-    const transport: Transport = portDef(fm.typeId, c.fromPort)?.transport ?? 'belt';
+    const transport: Transport = portDef(fm, c.fromPort)?.transport ?? 'belt';
     const occ = transport === 'pipe' ? info.pipeUse : info.beltUse;
     const cells = routeThrough(A, { cell: B.cell, axis: B.axis }, c.waypoints ?? [], info.blocked, occ);
     if (!cells) {
