@@ -2,9 +2,11 @@ import { CATALOG, CAT_COLOR, F } from './catalog';
 import { initEditor } from './editor';
 import { computeFlows } from './flows';
 import {
-  canPlace, connPath, dims, distToSeg, getPorts, portByKey, portDef,
+  canPlace, dims, distToSeg, getPorts, moduleRect, portByKey, portDef,
 } from './geometry';
 import type { Pt } from './geometry';
+import { computeRoutes, emptyRouteInfo, rectBlockedByRoutes } from './routing';
+import type { RouteInfo } from './routing';
 import {
   LS_THEME, decodeShareHash, deserializeInto, encodeShareHash, loadLocal, saveLocal, serialize,
 } from './persist';
@@ -41,6 +43,7 @@ export function startApp(): void {
 
   let powerInfo: PowerInfo = { nodes: [], unpowered: new Set(), hasSource: false };
   let flowInfo: FlowInfo = { flows: {}, bottlenecks: new Set(), modWarn: {}, inByPort: {} };
+  let routeInfo: RouteInfo = emptyRouteInfo();
 
   const cv = document.getElementById('cv') as HTMLCanvasElement;
   const ctx = cv.getContext('2d')!;
@@ -73,6 +76,7 @@ export function startApp(): void {
     saveTimer = window.setTimeout(() => saveLocal(state), 300);
   }
   function recompute(): void {
+    routeInfo = computeRoutes(state);
     powerInfo = computePower(state);
     flowInfo = computeFlows(state);
     updateStatus();
@@ -109,12 +113,15 @@ export function startApp(): void {
       const m = modById(selected.id);
       if (!m) return;
       const nr = (m.rot + 90) % 360;
-      if (canPlace(state.modules, m.typeId, m.x, m.y, nr, m.id)) {
+      const fp = F(m.typeId).footprint;
+      const nd = nr % 180 === 0 ? { w: fp.w, h: fp.h } : { w: fp.h, h: fp.w };
+      if (canPlace(state.modules, m.typeId, m.x, m.y, nr, m.id)
+        && !rectBlockedByRoutes(routeInfo, state, { x: m.x, y: m.y, w: nd.w, h: nd.h }, m.id)) {
         m.rot = nr;
         recompute();
         scheduleSave();
       } else {
-        toast('회전하면 다른 설비와 겹칩니다');
+        toast('회전하면 다른 설비 또는 벨트/파이프와 겹칩니다');
       }
     }
   }
@@ -141,12 +148,20 @@ export function startApp(): void {
       toast('이미 연결되어 있습니다');
       return false;
     }
-    state.connections.push({
+    const conn = {
       id: state.nextId++,
       fromModuleId: from.moduleId, fromPort: from.port.key,
       toModuleId: to.moduleId, toPort: to.port.key,
-    });
+    };
+    state.connections.push(conn);
     recompute();
+    if (routeInfo.unrouted.has(conn.id)) {
+      // 설비/기존 라인에 막혀 경로가 없으면 연결 자체를 취소
+      state.connections = state.connections.filter((c) => c.id !== conn.id);
+      recompute();
+      toast('경로를 찾을 수 없습니다 — 벨트/파이프가 지나갈 칸이 막혀 있습니다');
+      return false;
+    }
     scheduleSave();
     return true;
   }
@@ -169,10 +184,21 @@ export function startApp(): void {
     }
     return null;
   }
+  function connPoly(c: { id: number; fromModuleId: number; fromPort: string; toModuleId: number; toPort: string }): Pt[] | null {
+    const poly = routeInfo.polys.get(c.id);
+    if (poly) return poly;
+    // 경로 실패 시 포트 간 직선 (빨간 점선 표시용)
+    const fm = modById(c.fromModuleId);
+    const tm = modById(c.toModuleId);
+    if (!fm || !tm) return null;
+    const a = portByKey(fm, c.fromPort);
+    const b = portByKey(tm, c.toPort);
+    return a && b ? [{ x: a.x, y: a.y }, { x: b.x, y: b.y }] : null;
+  }
   function hitConn(wpt: Pt): Hover | null {
-    const tol = Math.max(0.22, 7 / (CELL * view.scale));
+    const tol = Math.max(0.3, 7 / (CELL * view.scale));
     for (const c of state.connections) {
-      const pts = connPath(c, modById);
+      const pts = connPoly(c);
       if (!pts) continue;
       for (let i = 0; i < pts.length - 1; i++) {
         if (distToSeg(wpt, pts[i], pts[i + 1]) <= tol) return { kind: 'conn', id: c.id };
@@ -269,44 +295,105 @@ export function startApp(): void {
     return (m && portDef(m.typeId, c.fromPort)?.transport) ?? 'belt';
   }
   function drawConnections(): void {
+    const s = CELL * view.scale;
     for (const c of state.connections) {
-      const pts = connPath(c, modById);
+      const pts = connPoly(c);
       if (!pts) continue;
+      const routed = !!routeInfo.polys.get(c.id);
       const isBottleneck = flowInfo.bottlenecks.has(c.id);
       const isSel = selected?.kind === 'conn' && selected.id === c.id;
       const isHover = hover?.kind === 'conn' && hover.id === c.id;
       const isPipe = connTransport(c) === 'pipe';
-      ctx.strokeStyle = isSel ? cssVar('--accent') : isBottleneck ? cssVar('--warn') : isHover ? cssVar('--text') : isPipe ? cssVar('--pipe') : cssVar('--belt');
-      ctx.lineWidth = isBottleneck || isSel ? 3.5 : 2.5;
-      ctx.setLineDash(isPipe ? [7, 4] : []);
+      const color = !routed ? cssVar('--danger')
+        : isSel ? cssVar('--accent')
+        : isBottleneck ? cssVar('--warn')
+        : isHover ? cssVar('--text')
+        : isPipe ? cssVar('--pipe') : cssVar('--belt');
+
+      const trace = (): void => {
+        ctx.beginPath();
+        pts.forEach((p, i) => {
+          const sp = sOf(p.x, p.y);
+          if (i) ctx.lineTo(sp.x, sp.y); else ctx.moveTo(sp.x, sp.y);
+        });
+        ctx.stroke();
+      };
       ctx.lineJoin = 'round';
-      ctx.beginPath();
-      pts.forEach((p, i) => {
-        const s = sOf(p.x, p.y);
-        if (i) ctx.lineTo(s.x, s.y); else ctx.moveTo(s.x, s.y);
-      });
-      ctx.stroke();
-      ctx.setLineDash([]);
+      ctx.lineCap = 'butt';
+      if (!routed) {
+        // 경로 실패: 빨간 점선 직선
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([6, 5]);
+        trace();
+        ctx.setLineDash([]);
+      } else {
+        // 셀을 점유하는 두께로 그리기 (외곽 어두운 테두리 + 본체)
+        const bodyW = isPipe ? Math.max(3, s * 0.26) : Math.max(4, s * 0.42);
+        ctx.globalAlpha = 0.92;
+        ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+        ctx.lineWidth = bodyW + Math.max(2, s * 0.07);
+        trace();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = bodyW;
+        trace();
+        // 벨트 진행 방향 화살표(칸 간격마다)
+        if (s > 14) {
+          ctx.fillStyle = 'rgba(0,0,0,0.45)';
+          for (let i = 1; i < pts.length - 1; i++) {
+            const a0 = pts[i];
+            const b0 = pts[i + 1];
+            if (i % 2 && (a0.x !== b0.x || a0.y !== b0.y)) {
+              const sp = sOf((a0.x + b0.x) / 2, (a0.y + b0.y) / 2);
+              const ang = Math.atan2(b0.y - a0.y, b0.x - a0.x);
+              const L = bodyW * 0.55;
+              ctx.beginPath();
+              ctx.moveTo(sp.x + L * Math.cos(ang), sp.y + L * Math.sin(ang));
+              ctx.lineTo(sp.x + L * Math.cos(ang + 2.4), sp.y + L * Math.sin(ang + 2.4));
+              ctx.lineTo(sp.x + L * Math.cos(ang - 2.4), sp.y + L * Math.sin(ang - 2.4));
+              ctx.closePath();
+              ctx.fill();
+            }
+          }
+        }
+        ctx.globalAlpha = 1;
+      }
       // 종점 화살표
       const b = sOf(pts[pts.length - 1].x, pts[pts.length - 1].y);
       const a = sOf(pts[pts.length - 2].x, pts[pts.length - 2].y);
       const ang = Math.atan2(b.y - a.y, b.x - a.x);
-      const L = 7;
-      ctx.fillStyle = ctx.strokeStyle;
+      const L = Math.max(7, s * 0.28);
+      ctx.fillStyle = color;
       ctx.beginPath();
       ctx.moveTo(b.x, b.y);
       ctx.lineTo(b.x - L * Math.cos(ang - 0.5), b.y - L * Math.sin(ang - 0.5));
       ctx.lineTo(b.x - L * Math.cos(ang + 0.5), b.y - L * Math.sin(ang + 0.5));
       ctx.closePath();
       ctx.fill();
-      if (isBottleneck) {
+      if (isBottleneck || !routed) {
         const mid = pts[Math.floor(pts.length / 2)];
         const ms = sOf(mid.x, mid.y);
         ctx.font = '13px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('⚠️', ms.x, ms.y - 10);
+        ctx.fillText(routed ? '⚠️' : '🚫', ms.x, ms.y - 10);
       }
+    }
+    // 교차 브리지 (직선×직선 교차 칸에 자동 생성)
+    for (const br of routeInfo.bridges) {
+      const cpt = sOf(br.x + 0.5, br.y + 0.5);
+      const half = s * 0.32;
+      ctx.fillStyle = cssVar('--bg-canvas');
+      ctx.strokeStyle = br.transport === 'pipe' ? cssVar('--pipe') : cssVar('--belt');
+      ctx.lineWidth = 2;
+      roundRect(cpt.x - half, cpt.y - half, half * 2, half * 2, Math.min(4, half * 0.4));
+      ctx.fill();
+      ctx.stroke();
+      // 위로 지나가는 방향 표시(수평선)
+      ctx.beginPath();
+      ctx.moveTo(cpt.x - half * 0.7, cpt.y);
+      ctx.lineTo(cpt.x + half * 0.7, cpt.y);
+      ctx.stroke();
     }
   }
   function drawModules(): void {
@@ -522,7 +609,8 @@ export function startApp(): void {
     const d = ghost.rot % 180 === 0 ? { w: fp.w, h: fp.h } : { w: fp.h, h: fp.w };
     ghost.x = Math.round(mouseCell.x - d.w / 2);
     ghost.y = Math.round(mouseCell.y - d.h / 2);
-    ghost.valid = canPlace(state.modules, ghost.typeId, ghost.x, ghost.y, ghost.rot, null);
+    ghost.valid = canPlace(state.modules, ghost.typeId, ghost.x, ghost.y, ghost.rot, null)
+      && !rectBlockedByRoutes(routeInfo, state, { x: ghost.x, y: ghost.y, w: d.w, h: d.h }, null);
   }
 
   wrap.addEventListener('wheel', (e) => {
@@ -572,11 +660,10 @@ export function startApp(): void {
       } else {
         const sm = modById(pending.moduleId);
         const sp = sm ? portByKey(sm, pending.portKey) : null;
-        if (sp && tryConnect({ moduleId: pending.moduleId, port: sp }, { moduleId: ph.moduleId, port: ph.port })) {
-          pending = null;
-        } else if (sp && pending.moduleId === ph.moduleId && pending.portKey === ph.port.key) {
-          pending = null; // 같은 포트 다시 클릭 → 취소
+        if (sp && !(pending.moduleId === ph.moduleId && pending.portKey === ph.port.key)) {
+          tryConnect({ moduleId: pending.moduleId, port: sp }, { moduleId: ph.moduleId, port: ph.port });
         }
+        pending = null; // 성공/실패/같은 포트 재클릭 모두 대기 해제
       }
       return;
     }
@@ -675,7 +762,8 @@ export function startApp(): void {
     if (moveDrag) {
       const m = modById(moveDrag.id);
       if (m && moveDrag.moved) {
-        if (!canPlace(state.modules, m.typeId, m.x, m.y, m.rot, m.id)) {
+        if (!canPlace(state.modules, m.typeId, m.x, m.y, m.rot, m.id)
+          || rectBlockedByRoutes(routeInfo, state, moduleRect(m), m.id)) {
           m.x = moveDrag.origX;
           m.y = moveDrag.origY;
           toast('겹치는 위치에는 놓을 수 없습니다');
@@ -796,10 +884,13 @@ export function startApp(): void {
       const tm = modById(c.toModuleId)!;
       const flow = flowInfo.flows[c.id] ?? {};
       const entries = Object.entries(flow).filter(([, v]) => v > 1e-6);
+      const isPipeConn = connTransport(c) === 'pipe';
+      const cellCount = routeInfo.cells.get(c.id)?.length ?? null;
       el.innerHTML = `
-        <h2>🛝 벨트/파이프</h2>
+        <h2>${isPipeConn ? '🧪 파이프' : '🛝 컨베이어 벨트'}</h2>
         <div class="sect"><div class="sect-title">구간</div>
           <div class="io-row"><span>${esc(F(fm.typeId).name)}</span><span>→</span><span>${esc(F(tm.typeId).name)}</span></div>
+          <div class="io-row"><span>점유 길이</span><span class="rate">${cellCount !== null ? `${cellCount}칸` : '경로 없음'}</span></div>
         </div>
         <div class="sect"><div class="sect-title">운반 흐름</div>
           ${entries.length
@@ -807,6 +898,7 @@ export function startApp(): void {
             : '<div class="empty">흐름 없음</div>'}
         </div>
         ${flowInfo.bottlenecks.has(c.id) ? '<div class="warn-box">⚠️ 병목 구간입니다. 공급 라인을 추가하세요.</div>' : ''}
+        ${routeInfo.unrouted.has(c.id) ? '<div class="danger-box">🚫 경로를 찾지 못했습니다. 주변 설비/라인을 옮겨 공간을 확보하세요.</div>' : ''}
         <div class="btn-row"><button class="btn danger" id="btnDelConn">🗑 연결 삭제</button></div>
       ` + legend;
       $('btnDelConn').addEventListener('click', deleteSelected);
@@ -871,6 +963,7 @@ export function startApp(): void {
     let html = `<span>설비 <b>${state.modules.length}</b></span><span>연결 <b>${state.connections.length}</b></span>`;
     if (nWarn) html += `<span class="w-belt">⚠️ 병목 ${nWarn}</span>`;
     if (nUnpow) html += `<span class="w-power">⚡ 전력 부족 ${nUnpow}</span>`;
+    if (routeInfo.unrouted.size) html += `<span class="w-power">🚫 경로 없음 ${routeInfo.unrouted.size}</span>`;
     if (!powerInfo.hasSource && state.modules.some((m) => (F(m.typeId).powerDraw ?? 0) > 0)) {
       html += `<span>전력원(프로토콜 코어) 없음 — 전력 검사 생략</span>`;
     }
