@@ -1,4 +1,5 @@
 import { CATALOG, CAT_COLOR, F } from './catalog';
+import { initEditor } from './editor';
 import { computeFlows } from './flows';
 import {
   canPlace, connPath, dims, distToSeg, getPorts, portByKey,
@@ -903,6 +904,24 @@ export function startApp(): void {
       return false;
     }
   }
+
+  initEditor({
+    isTypeInUse: (typeId) => state.modules.some((m) => m.typeId === typeId),
+    onCatalogChanged: () => {
+      // 카탈로그 변경 후: 사라진 타입의 모듈, 유효하지 않은 포트를 참조하는 연결 정리
+      state.modules = state.modules.filter((m) => F(m.typeId));
+      state.connections = state.connections.filter((c) => {
+        const fm = modById(c.fromModuleId);
+        const tm = modById(c.toModuleId);
+        return !!(fm && tm && portByKey(fm, c.fromPort) && portByKey(tm, c.toPort));
+      });
+      if (selected?.kind === 'module' && !modById(selected.id)) selected = null;
+      buildPalette();
+      recompute();
+      scheduleSave();
+    },
+    toast,
+  });
 
   const theme = (() => { try { return localStorage.getItem(LS_THEME); } catch { return null; } })() ?? 'dark';
   document.documentElement.dataset.theme = theme;
