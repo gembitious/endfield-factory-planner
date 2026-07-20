@@ -163,4 +163,4 @@ src/
 
 ## 이미지 저작권 고지
 
-`public/icons/`의 설비 아이콘은 게임 **명일방주: 엔드필드**의 인게임 에셋으로, 저작권은 **ⓒ Hypergryph / Gryphline**에 있습니다. 이미지는 [Endfield Talos Wiki](https://endfield.wiki.gg/wiki/Category:Facility_icons)에서 가져왔으며, 이 프로젝트는 수익을 목적으로 하지 않는 비공식 팬 도구입니다. 권리자의 요청이 있을 경우 해당 이미지는 즉시 제거됩니다.
+`public/icons/`의 설비 아이콘은 게임 **명일방주: 엔드필드**의 인게임 에셋으로, 저작권은 **ⓒ Hypergryph / Gryphline**에 있습니다. 이미지는 [Endfield Talos Wiki](https://endfield.wiki.gg/wiki/Category:Facility_icons)(52종)와 [Game8](https://game8.co/games/Arknights-Endfield)(기체 공업 6종)에서 가져왔으며, 이 프로젝트는 수익을 목적으로 하지 않는 비공식 팬 도구입니다. 권리자의 요청이 있을 경우 해당 이미지는 즉시 제거됩니다.

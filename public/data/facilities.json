@@ -2282,7 +2282,8 @@
           ],
           "note": "천화로 기체 모드 재료. 명칭은 일부 추정."
         }
-      ]
+      ],
+      "image": "icons/gas_collector.png"
     },
     {
       "id": "gas_liquid_conv",
@@ -2438,7 +2439,8 @@
             }
           ]
         }
-      ]
+      ],
+      "image": "icons/gas_liquid_conv.png"
     },
     {
       "id": "solid_gas_conv",
@@ -2600,7 +2602,8 @@
           ],
           "note": "기체 → 고체 역변환."
         }
-      ]
+      ],
+      "image": "icons/solid_gas_conv.png"
     },
     {
       "id": "gas_reactor",
@@ -2663,7 +2666,8 @@
           ],
           "note": "혁동 기체 2 + 식양 기체 1 → 작동 기체 1 (2초 사이클)."
         }
-      ]
+      ],
+      "image": "icons/gas_reactor.png"
     },
     {
       "id": "gas_tank",
@@ -2694,7 +2698,8 @@
           "pos": 1
         }
       ],
-      "note": "기체를 저장하는 설비(영문명 Gas Tank, 3×3 실측, 무릉 II). 버퍼로 사용."
+      "note": "기체를 저장하는 설비(영문명 Gas Tank, 3×3 실측, 무릉 II). 버퍼로 사용.",
+      "image": "icons/gas_tank.png"
     },
     {
       "id": "gas_disperser",
@@ -2716,7 +2721,8 @@
         }
       ],
       "outputs": [],
-      "note": "기체를 주변에 방출해 기체 환경을 바꾸는 설비(영문명 Gas Dispersing Unit, 3×3 실측, 무릉 III). 침식 대응 임시 응룡장 등으로 활용."
+      "note": "기체를 주변에 방출해 기체 환경을 바꾸는 설비(영문명 Gas Dispersing Unit, 3×3 실측, 무릉 III). 침식 대응 임시 응룡장 등으로 활용.",
+      "image": "icons/gas_disperser.png"
     },
     {
       "id": "logistics_bridge",
