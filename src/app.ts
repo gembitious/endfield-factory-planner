@@ -48,7 +48,7 @@ export function startApp(): void {
   let routeInfo: RouteInfo = emptyRouteInfo();
 
   const cv = document.getElementById('cv') as HTMLCanvasElement;
-  const ctx = cv.getContext('2d')!;
+  let ctx = cv.getContext('2d')!; // PNG 내보내기 시 임시로 오프스크린 컨텍스트로 교체됨
   const wrap = document.getElementById('canvasWrap')!;
   const tooltip = document.getElementById('tooltip')!;
 
@@ -1204,7 +1204,77 @@ export function startApp(): void {
     $('hint').style.display = state.modules.length ? 'none' : 'block';
   }
 
+  /* ── PNG 블루프린트 내보내기 ── */
+  function exportPNG(): void {
+    if (!state.modules.length) { toast('내보낼 배치가 없습니다'); return; }
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    const acc = (x: number, y: number): void => {
+      minX = Math.min(minX, x); minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x); maxY = Math.max(maxY, y);
+    };
+    for (const m of state.modules) {
+      const d = dims(m);
+      acc(m.x, m.y);
+      acc(m.x + d.w, m.y + d.h);
+    }
+    for (const cells of routeInfo.cells.values()) {
+      for (const c of cells ?? []) { acc(c.x, c.y); acc(c.x + 1, c.y + 1); }
+    }
+    const MARGIN = 2;
+    minX -= MARGIN; minY -= MARGIN; maxX += MARGIN; maxY += MARGIN;
+    const wCells = maxX - minX;
+    const hCells = maxY - minY;
+    const px = Math.max(8, Math.min(32, 4096 / Math.max(wCells, hCells)));
+    const W = Math.round(wCells * px);
+    const H = Math.round(hCells * px);
+    const off = document.createElement('canvas');
+    off.width = W;
+    off.height = H;
+    const octx = off.getContext('2d')!;
+
+    // 렌더 상태를 임시 교체하고 기존 그리기 함수 재사용
+    const oldCtx = ctx;
+    const oldView = { ...view };
+    const oldSel = selected;
+    const oldHover = hover;
+    ctx = octx;
+    selected = null;
+    hover = null;
+    view.x = -minX * px;
+    view.y = -minY * px;
+    view.scale = px / CELL;
+    octx.fillStyle = cssVar('--bg-canvas');
+    octx.fillRect(0, 0, W, H);
+    drawGrid(W, H);
+    drawPowerRanges();
+    drawConnections();
+    drawModules();
+    ctx = oldCtx;
+    view.x = oldView.x;
+    view.y = oldView.y;
+    view.scale = oldView.scale;
+    selected = oldSel;
+    hover = oldHover;
+    requestRender();
+
+    off.toBlob((blob) => {
+      if (!blob) { toast('PNG 생성에 실패했습니다'); return; }
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      const d = new Date();
+      const pad = (n: number): string => String(n).padStart(2, '0');
+      a.download = `endfield-blueprint-${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}.png`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast(`PNG 저장 (${W}×${H})`);
+    }, 'image/png');
+  }
+
   /* ── 툴바 ── */
+  $('btnPng').addEventListener('click', exportPNG);
   $('btnRotate').addEventListener('click', rotateTarget);
   $('btnDelete').addEventListener('click', deleteSelected);
   $('btnClear').addEventListener('click', () => {

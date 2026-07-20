@@ -2008,7 +2008,7 @@
               "rate": 30
             }
           ],
-          "note": "v1.4 기체 모드 — 공정 대폭 단축. 실제로는 청정수도 함께 필요합니다."
+          "note": "v1.4 기체 모드 — 공정 대폭 단축. 활성 대기는 기체 수집기로 채집(실제로는 청정수도 함께 필요)."
         },
         {
           "id": "heavy_xiranite",
@@ -2238,12 +2238,51 @@
       "inputs": [],
       "outputs": [
         {
-          "resource": "활성 대기",
+          "resource": "비활성 기체",
           "rate": 30,
-          "transport": "pipe"
+          "transport": "pipe",
+          "side": "E",
+          "pos": 1
         }
       ],
-      "note": "기체 채집 설비. 전력 불필요, 회수용 암관(최대 300m) 연결 필요."
+      "note": "기체 간헐천 위에 설치해 기체를 채집(영문명 Gas Extractor, 3×3 실측). 전력 불필요, 회수용 암관(최대 300m) 연결. 간헐천 종류에 따라 채집 기체가 다릅니다.",
+      "recipes": [
+        {
+          "id": "inergen",
+          "name": "비활성 기체 채집",
+          "outputs": [
+            {
+              "resource": "비활성 기체",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ]
+        },
+        {
+          "id": "xiragen",
+          "name": "식양 기체 채집",
+          "outputs": [
+            {
+              "resource": "식양 기체",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ],
+          "note": "식양 기체 간헐천 위에 설치."
+        },
+        {
+          "id": "atmosphere",
+          "name": "활성 대기 채집",
+          "outputs": [
+            {
+              "resource": "활성 대기",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ],
+          "note": "천화로 기체 모드 재료. 명칭은 일부 추정."
+        }
+      ]
     },
     {
       "id": "gas_liquid_conv",
@@ -2251,36 +2290,155 @@
       "category": "기체 공업",
       "icon": "🔃",
       "footprint": {
-        "w": 3,
-        "h": 3
+        "w": 5,
+        "h": 5
       },
       "powerDraw": 20,
       "inputs": [
         {
-          "resource": "적동 기체",
-          "rate": 30,
+          "resource": "any",
+          "rate": 0,
           "transport": "pipe",
           "side": "W",
           "pos": 1
         },
         {
-          "resource": "식양 기체",
-          "rate": 6,
+          "resource": "any",
+          "rate": 0,
           "transport": "pipe",
-          "side": "N",
-          "pos": 1
+          "side": "W",
+          "pos": 3
         }
       ],
       "outputs": [
         {
-          "resource": "적동 용액",
-          "rate": 30,
+          "resource": "any",
+          "rate": 0,
           "transport": "pipe",
           "side": "E",
-          "pos": 1
+          "pos": 2
         }
       ],
-      "note": "기체↔액체 변환. 가동용 식양 기체를 10초당 1(=6/분) 소모 — 초과 공급분은 그대로 소실되므로 파이프 컨트롤 포트로 정량 공급 권장."
+      "note": "액체↔기체 변환(영문명 Fluid-Gas Transmuting Unit, 5×5 실측). 가동용 식양 기체를 10초당 1(=6/분) 상시 소모 — 초과 공급분은 소실되므로 파이프 컨트롤 포트로 정량 공급 권장.",
+      "recipes": [
+        {
+          "id": "cuprium_gas",
+          "name": "적동 기체",
+          "inputs": [
+            {
+              "resource": "적동 용액",
+              "rate": 60,
+              "transport": "pipe"
+            },
+            {
+              "resource": "식양 기체",
+              "rate": 6,
+              "transport": "pipe"
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "적동 기체",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ]
+        },
+        {
+          "id": "hetonite_gas",
+          "name": "혁동 기체",
+          "inputs": [
+            {
+              "resource": "혁동 용액",
+              "rate": 30,
+              "transport": "pipe"
+            },
+            {
+              "resource": "식양 기체",
+              "rate": 6,
+              "transport": "pipe"
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "혁동 기체",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ]
+        },
+        {
+          "id": "steam",
+          "name": "수증기",
+          "inputs": [
+            {
+              "resource": "청정수",
+              "rate": 30,
+              "transport": "pipe"
+            },
+            {
+              "resource": "식양 기체",
+              "rate": 6,
+              "transport": "pipe"
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "수증기",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ],
+          "note": "명칭은 추정(영문 Aquagen)."
+        },
+        {
+          "id": "acrid_gas",
+          "name": "산성 기체",
+          "inputs": [
+            {
+              "resource": "산성 침적물",
+              "rate": 30,
+              "transport": "pipe"
+            },
+            {
+              "resource": "식양 기체",
+              "rate": 6,
+              "transport": "pipe"
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "산성 기체",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ],
+          "note": "명칭은 추정(영문 Acridgen)."
+        },
+        {
+          "id": "heavy_xiragen",
+          "name": "중식양 기체",
+          "inputs": [
+            {
+              "resource": "액화 중식양",
+              "rate": 12,
+              "transport": "pipe"
+            },
+            {
+              "resource": "식양 기체",
+              "rate": 6,
+              "transport": "pipe"
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "중식양 기체",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "solid_gas_conv",
@@ -2288,57 +2446,26 @@
       "category": "기체 공업",
       "icon": "🌫️",
       "footprint": {
-        "w": 3,
-        "h": 3
+        "w": 5,
+        "h": 5
       },
       "powerDraw": 20,
       "inputs": [
         {
-          "resource": "식양",
-          "rate": 30,
-          "side": "W",
+          "resource": "any",
+          "rate": 0,
+          "side": "S",
           "pos": 1
         },
         {
-          "resource": "액화 식양",
-          "rate": 6,
-          "transport": "pipe",
-          "side": "N",
-          "pos": 1
-        }
-      ],
-      "outputs": [
-        {
-          "resource": "식양 기체",
-          "rate": 30,
-          "transport": "pipe",
-          "side": "E",
-          "pos": 1
-        }
-      ],
-      "note": "고체↔기체 변환. 가동용 액화 식양 소량 요구. 기체 공정의 시작점."
-    },
-    {
-      "id": "gas_reactor",
-      "name": "기체 반응기",
-      "category": "기체 공업",
-      "icon": "💨",
-      "footprint": {
-        "w": 3,
-        "h": 3
-      },
-      "powerDraw": 50,
-      "inputs": [
-        {
-          "resource": "혁동 기체",
-          "rate": 30,
-          "transport": "pipe",
-          "side": "W",
-          "pos": 0
+          "resource": "any",
+          "rate": 0,
+          "side": "S",
+          "pos": 3
         },
         {
-          "resource": "식양 기체",
-          "rate": 30,
+          "resource": "any",
+          "rate": 0,
           "transport": "pipe",
           "side": "W",
           "pos": 2
@@ -2346,14 +2473,250 @@
       ],
       "outputs": [
         {
-          "resource": "작동 기체",
-          "rate": 30,
+          "resource": "any",
+          "rate": 0,
+          "side": "N",
+          "pos": 2
+        },
+        {
+          "resource": "any",
+          "rate": 0,
+          "transport": "pipe",
+          "side": "E",
+          "pos": 2
+        }
+      ],
+      "note": "고체↔기체 변환(영문명 Solid-Gas Transmuting Unit, 5×5 실측). 가동용 액화 식양을 소량 상시 소모. 기체 공정의 시작점.",
+      "recipes": [
+        {
+          "id": "hetonite_gas",
+          "name": "혁동 기체",
+          "inputs": [
+            {
+              "resource": "혁동",
+              "rate": 30
+            },
+            {
+              "resource": "액화 식양",
+              "rate": 6,
+              "transport": "pipe"
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "혁동 기체",
+              "rate": 60,
+              "transport": "pipe"
+            }
+          ],
+          "note": "혁동 1 → 기체 2."
+        },
+        {
+          "id": "cuprium_gas",
+          "name": "적동 기체",
+          "inputs": [
+            {
+              "resource": "적동 조각",
+              "rate": 60
+            },
+            {
+              "resource": "액화 식양",
+              "rate": 6,
+              "transport": "pipe"
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "적동 기체",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ]
+        },
+        {
+          "id": "heavy_xiragen",
+          "name": "중식양 기체",
+          "inputs": [
+            {
+              "resource": "중식양",
+              "rate": 60
+            },
+            {
+              "resource": "액화 식양",
+              "rate": 6,
+              "transport": "pipe"
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "중식양 기체",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ]
+        },
+        {
+          "id": "pyrrolite_gas",
+          "name": "작동 기체",
+          "inputs": [
+            {
+              "resource": "작동",
+              "rate": 30
+            },
+            {
+              "resource": "액화 식양",
+              "rate": 6,
+              "transport": "pipe"
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "작동 기체",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ]
+        },
+        {
+          "id": "pyrrolite_solid",
+          "name": "작동 (기체 응고)",
+          "inputs": [
+            {
+              "resource": "작동 기체",
+              "rate": 30,
+              "transport": "pipe"
+            },
+            {
+              "resource": "액화 식양",
+              "rate": 6,
+              "transport": "pipe"
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "작동",
+              "rate": 30
+            }
+          ],
+          "note": "기체 → 고체 역변환."
+        }
+      ]
+    },
+    {
+      "id": "gas_reactor",
+      "name": "기체 반응기",
+      "category": "기체 공업",
+      "icon": "💨",
+      "footprint": {
+        "w": 5,
+        "h": 5
+      },
+      "powerDraw": 50,
+      "inputs": [
+        {
+          "resource": "any",
+          "rate": 0,
+          "transport": "pipe",
+          "side": "W",
+          "pos": 1
+        },
+        {
+          "resource": "any",
+          "rate": 0,
+          "transport": "pipe",
+          "side": "W",
+          "pos": 3
+        }
+      ],
+      "outputs": [
+        {
+          "resource": "any",
+          "rate": 0,
+          "transport": "pipe",
+          "side": "E",
+          "pos": 2
+        }
+      ],
+      "note": "기체 2종을 합성하는 반응기(영문명 Gas Reactor Globe, 5×5 실측).",
+      "recipes": [
+        {
+          "id": "pyrrolite_gas",
+          "name": "작동 기체",
+          "inputs": [
+            {
+              "resource": "혁동 기체",
+              "rate": 60,
+              "transport": "pipe"
+            },
+            {
+              "resource": "식양 기체",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "작동 기체",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ],
+          "note": "혁동 기체 2 + 식양 기체 1 → 작동 기체 1 (2초 사이클)."
+        }
+      ]
+    },
+    {
+      "id": "gas_tank",
+      "name": "기체 저장 탱크",
+      "category": "기체 공업",
+      "icon": "🎈",
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
+      "powerDraw": 0,
+      "passthrough": true,
+      "inputs": [
+        {
+          "resource": "any",
+          "rate": 120,
+          "transport": "pipe",
+          "side": "W",
+          "pos": 1
+        }
+      ],
+      "outputs": [
+        {
+          "resource": "any",
+          "rate": 120,
           "transport": "pipe",
           "side": "E",
           "pos": 1
         }
       ],
-      "note": "기체 2종을 합성하는 반응기."
+      "note": "기체를 저장하는 설비(영문명 Gas Tank, 3×3 실측, 무릉 II). 버퍼로 사용."
+    },
+    {
+      "id": "gas_disperser",
+      "name": "기체 방출기",
+      "category": "기체 공업",
+      "icon": "🌬️",
+      "footprint": {
+        "w": 3,
+        "h": 3
+      },
+      "powerDraw": 0,
+      "inputs": [
+        {
+          "resource": "any",
+          "rate": 30,
+          "transport": "pipe",
+          "side": "W",
+          "pos": 1
+        }
+      ],
+      "outputs": [],
+      "note": "기체를 주변에 방출해 기체 환경을 바꾸는 설비(영문명 Gas Dispersing Unit, 3×3 실측, 무릉 III). 침식 대응 임시 응룡장 등으로 활용."
     },
     {
       "id": "logistics_bridge",

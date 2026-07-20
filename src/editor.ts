@@ -151,6 +151,8 @@ export function initEditor(hooks: EditorHooks): void {
         <div><div class="sect-title">입력 (수요, 분당)</div><div id="efInputs">${ioRows('inputs', f.inputs)}</div></div>
         <div><div class="sect-title">출력 (생산, 분당)</div><div id="efOutputs">${ioRows('outputs', f.outputs)}</div></div>
       </div>
+      <label class="ed-note">레시피 (JSON 배열 — 각 항목: {"id","name","inputs":[{"resource","rate","transport"?}],"outputs":[...],"note"?}. 비우면 레시피 없음)
+        <textarea id="efRecipes" rows="8" spellcheck="false">${esc(f.recipes?.length ? JSON.stringify(f.recipes, null, 1) : '')}</textarea></label>
       <div class="ed-apply"><button class="btn" id="efApply">✔ 이 설비 저장</button></div>`;
 
     // IO 행 추가/삭제 (폼 안에서만 동작, 저장 시 일괄 반영)
@@ -194,9 +196,41 @@ export function initEditor(hooks: EditorHooks): void {
         });
         return out;
       };
+      // 레시피 JSON 파싱·검증
+      const recipesRaw = ($('efRecipes') as HTMLTextAreaElement).value.trim();
+      let recipes: FacilityType['recipes'];
+      if (recipesRaw) {
+        try {
+          recipes = JSON.parse(recipesRaw);
+          if (!Array.isArray(recipes)) throw new Error('배열이어야 합니다');
+          for (const r of recipes) {
+            if (typeof r.id !== 'string' || !r.id || typeof r.name !== 'string' || !r.name) {
+              throw new Error('각 레시피에 id와 name이 필요합니다');
+            }
+            for (const key of ['inputs', 'outputs'] as const) {
+              const arr = r[key];
+              if (arr !== undefined) {
+                if (!Array.isArray(arr)) throw new Error(`${r.id}의 ${key}는 배열이어야 합니다`);
+                for (const p of arr) {
+                  if (typeof p.resource !== 'string' || typeof p.rate !== 'number') {
+                    throw new Error(`${r.id}의 ${key} 항목에 resource(문자열)와 rate(숫자)가 필요합니다`);
+                  }
+                }
+              }
+            }
+          }
+          if (new Set(recipes.map((r) => r.id)).size !== recipes.length) {
+            throw new Error('레시피 id가 중복됩니다');
+          }
+        } catch (err) {
+          hooks.toast(`레시피 JSON 오류: ${(err as Error).message}`);
+          return;
+        }
+      }
       f.id = newId;
       f.name = name;
       f.category = cat;
+      f.recipes = recipes?.length ? recipes : undefined;
       f.icon = ($('efIcon') as HTMLInputElement).value.trim() || undefined;
       f.image = ($('efImage') as HTMLInputElement).value.trim() || undefined;
       f.footprint = {
