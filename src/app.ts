@@ -55,8 +55,8 @@ export function startApp(): void {
     return { x0: -Math.floor(s.w / 2), y0: -Math.floor(s.h / 2), w: s.w, h: s.h };
   }
   // 구역 밖 설치가 허용되는 설비 (실게임: 필드 설치 가능 계열. 파이프는 라우팅에서 별도 허용)
-  const OUTSIDE_OK_CATEGORIES = new Set(['자원 채집', '전력 공급', '기능성 설비', '전투 보조', '기체 공업']);
-  const OUTSIDE_OK_IDS = new Set(['duct_inlet', 'duct_outlet', 'product_outlet', 'sewage_inlet']);
+  const OUTSIDE_OK_CATEGORIES = new Set(['자원 채집', '전력 공급', '기능성 설비', '전투 보조']);
+  const OUTSIDE_OK_IDS = new Set(['duct_inlet', 'duct_outlet', 'product_outlet', 'sewage_inlet', 'gas_tank', 'gas_disperser']);
   function siteAllowsPlacement(typeId: string, x: number, y: number, w: number, h: number): boolean {
     const b = activeSiteBounds();
     if (!b) return true;
@@ -742,7 +742,7 @@ export function startApp(): void {
         el.dataset.typeId = f.id;
         el.style.setProperty('--cat-color', CAT_COLOR[cat] ?? '#888');
         const power = f.powerRange && f.powerRange > 0
-          ? `범위 ${f.powerRange}m`
+          ? `범위 ${f.powerRange}M`
           : f.powerDraw && f.powerDraw > 0 ? `전력 ${f.powerDraw}` : '무전력';
         const iconHtml = f.image
           ? `<img class="pal-icon-img" src="${esc(import.meta.env.BASE_URL + f.image)}" alt="">`
@@ -1105,7 +1105,7 @@ export function startApp(): void {
       const t = F(m.typeId);
       html = `<div class="tt-title">${t.icon ?? ''} ${esc(t.name)}</div>`;
       html += `<span class="dim">${esc(t.category)} · ${t.footprint.w}×${t.footprint.h}`;
-      if (t.powerRange && t.powerRange > 0) html += ` · 범위 ${t.powerRange}m`;
+      if (t.powerRange && t.powerRange > 0) html += ` · 범위 ${t.powerRange}M`;
       else if (t.powerDraw && t.powerDraw > 0) html += ` · 전력 ${t.powerDraw}`;
       html += `</span>`;
       const rec = activeRecipe(m);
@@ -1262,7 +1262,7 @@ export function startApp(): void {
       : (t.icon ?? '');
     let html = `<h2>${infoIcon} ${esc(t.name)} <span class="chip" style="background:${catColor}">${esc(t.category)}</span></h2>
       <div style="color:var(--text-dim)">${t.footprint.w}×${t.footprint.h} · 회전 ${m.rot}° · 위치 (${m.x}, ${m.y})</div>`;
-    if (t.powerRange && t.powerRange > 0) html += `<div style="color:var(--text-dim)">전력 공급 범위: ${t.powerRange}m${t.powerSource ? ' (전력원)' : ' (코어 연쇄 필요)'}</div>`;
+    if (t.powerRange && t.powerRange > 0) html += `<div style="color:var(--text-dim)">전력 공급 범위: ${t.powerRange}M${t.powerSource ? ' (전력원)' : ' (코어 연쇄 필요)'}</div>`;
     else if (t.powerDraw && t.powerDraw > 0) html += `<div style="color:var(--text-dim)">전력 소비량: ${t.powerDraw}</div>`;
     if (t.maxPerBase) {
       const cnt = state.modules.filter((x) => x.typeId === m.typeId).length;
@@ -1275,9 +1275,10 @@ export function startApp(): void {
       html += `<div class="sect"><div class="sect-title">통과 제한</div>
         <div class="limit-row">
           <input type="number" id="limitInput" min="0" step="1" placeholder="무제한"
-            value="${m.limit ?? ''}" title="분당 통과 개수 제한 (실게임 컨트롤 포트의 수량 제한)">
+            value="${m.limit ?? ''}" title="실게임은 통과 수량 제한(최대 5000개) — 플래너에서는 분당 통과량으로 모델링">
           <span class="limit-unit">개/분</span>
-        </div></div>`;
+        </div>
+        <div class="note-box">실게임 컨트롤 포트는 누적 수량 제한(최대 5000개)이지만, 플래너에서는 라인 속도 조절 용도(예: 12/분)에 맞춰 분당 통과량으로 모델링합니다.</div></div>`;
     }
 
     // 레시피 선택
@@ -1621,7 +1622,7 @@ export function startApp(): void {
   }
   {
     const sel = $('siteSel') as HTMLSelectElement;
-    sel.innerHTML = `<option value="">부지 없음 (무한)</option>`
+    sel.innerHTML = `<option value="">공업 구역 없음 (무한)</option>`
       + SITES.map((s) => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
     sel.addEventListener('change', () => setSite(sel.value || null));
   }

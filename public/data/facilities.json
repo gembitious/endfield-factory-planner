@@ -1,7 +1,7 @@
 {
   "version": 2,
   "metersPerCell": 4,
-  "note": "설비/자원 명칭은 한국어 정식 서비스 기준(나무위키 대조). footprint·포트 개수/위치/종류(벨트·파이프)·전력 소비량은 EnKAD(enka.network Endfield 플래너)의 게임 클라이언트 추출 데이터 기준 실측값. 생산 속도는 Game8 실측 레시피(2초/10초 사이클) 기준 — 천화로 등 일부만 커뮤니티 추정. 같은 리소스가 여러 포트에 있으면 설비 단위로 합산 처리(포트는 병렬 레인). image는 public/ 기준 상대 경로, 아이콘 이미지는 ⓒ Hypergryph/Gryphline (Endfield Talos Wiki 출처).",
+  "note": "설비/자원 명칭은 한국어 정식 서비스 기준(나무위키 대조). footprint·포트 개수/위치/종류(벨트·파이프)·전력 소비량은 EnKAD(enka.network Endfield 플래너)의 게임 클라이언트 추출 데이터 기준 실측값. 생산 속도는 Game8 실측 레시피(2초/10초 사이클) 기준 — 천화로 등 일부만 커뮤니티 추정. 같은 리소스가 여러 포트에 있으면 설비 단위로 합산 처리(포트는 병렬 레인). image는 public/ 기준 상대 경로, 아이콘 이미지는 ⓒ Hypergryph/Gryphline (Endfield Talos Wiki 출처). 오리고 크러스트/자수정 섬유/내압 병/등급 접두사 등은 인게임 확인 명칭(2026-07-20).",
   "categories": {
     "자원 채집": {
       "color": "#d97706"
@@ -11,9 +11,6 @@
     },
     "합성 및 제작": {
       "color": "#8b5cf6"
-    },
-    "기체 공업": {
-      "color": "#14b8a6"
     },
     "물류 장치": {
       "color": "#64748b"
@@ -261,19 +258,19 @@
       ],
       "outputs": [
         {
-          "resource": "정련 자수정",
+          "resource": "자수정 섬유",
           "rate": 30,
           "side": "N",
           "pos": 0
         },
         {
-          "resource": "정련 자수정",
+          "resource": "자수정 섬유",
           "rate": 30,
           "side": "N",
           "pos": 1
         },
         {
-          "resource": "정련 자수정",
+          "resource": "자수정 섬유",
           "rate": 30,
           "side": "N",
           "pos": 2
@@ -291,7 +288,7 @@
       "recipes": [
         {
           "id": "refine_amethyst",
-          "name": "자수정 정련",
+          "name": "자수정 섬유 정련",
           "inputs": [
             {
               "resource": "자수정 광석",
@@ -300,14 +297,14 @@
           ],
           "outputs": [
             {
-              "resource": "정련 자수정",
+              "resource": "자수정 섬유",
               "rate": 30
             }
           ]
         },
         {
           "id": "refine_origium",
-          "name": "오리지늄 정련",
+          "name": "오리고 크러스트 정련",
           "inputs": [
             {
               "resource": "오리지늄 광물",
@@ -316,7 +313,7 @@
           ],
           "outputs": [
             {
-              "resource": "정련 오리지늄",
+              "resource": "오리고 크러스트",
               "rate": 30
             }
           ]
@@ -332,7 +329,7 @@
           ],
           "outputs": [
             {
-              "resource": "정련 페리움",
+              "resource": "페리움",
               "rate": 30
             }
           ]
@@ -382,7 +379,7 @@
         },
         {
           "id": "refine_packed",
-          "name": "고급 정련 오리지늄",
+          "name": "정련 오리고 크러스트",
           "inputs": [
             {
               "resource": "고밀도 오리지늄 가루",
@@ -391,11 +388,11 @@
           ],
           "outputs": [
             {
-              "resource": "고급 정련 오리지늄",
+              "resource": "정련 오리고 크러스트",
               "rate": 30
             }
           ],
-          "note": "영문 Packed Origocrust — 한국어 명칭은 추정."
+          "note": "고밀도 오리지늄 가루를 재정련한 상위 재료."
         },
         {
           "id": "refine_cryston",
@@ -408,7 +405,7 @@
           ],
           "outputs": [
             {
-              "resource": "정련 크리스톤",
+              "resource": "크리스톤 섬유",
               "rate": 30
             }
           ]
@@ -460,19 +457,19 @@
       "powerDraw": 5,
       "inputs": [
         {
-          "resource": "정련 오리지늄",
+          "resource": "오리지늄 광물",
           "rate": 30,
           "side": "S",
           "pos": 0
         },
         {
-          "resource": "정련 오리지늄",
+          "resource": "오리지늄 광물",
           "rate": 30,
           "side": "S",
           "pos": 1
         },
         {
-          "resource": "정련 오리지늄",
+          "resource": "오리지늄 광물",
           "rate": 30,
           "side": "S",
           "pos": 2
@@ -520,16 +517,16 @@
         },
         {
           "id": "crush_origocrust",
-          "name": "정련 오리지늄 가루",
+          "name": "오리고 크러스트 가루",
           "inputs": [
             {
-              "resource": "정련 오리지늄",
+              "resource": "오리고 크러스트",
               "rate": 30
             }
           ],
           "outputs": [
             {
-              "resource": "정련 오리지늄 가루",
+              "resource": "오리고 크러스트 가루",
               "rate": 30
             }
           ]
@@ -539,7 +536,7 @@
           "name": "자수정 가루",
           "inputs": [
             {
-              "resource": "정련 자수정",
+              "resource": "자수정 섬유",
               "rate": 30
             }
           ],
@@ -555,7 +552,7 @@
           "name": "페리움 가루",
           "inputs": [
             {
-              "resource": "정련 페리움",
+              "resource": "페리움",
               "rate": 30
             }
           ],
@@ -663,6 +660,22 @@
             }
           ],
           "note": "1 → 3개. 라인 1개로 연마기 3대 커버."
+        },
+        {
+          "id": "crush_aketine",
+          "name": "아케톤 가루",
+          "inputs": [
+            {
+              "resource": "아케톤",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "아케톤 가루",
+              "rate": 60
+            }
+          ]
         }
       ]
     },
@@ -678,19 +691,19 @@
       "powerDraw": 20,
       "inputs": [
         {
-          "resource": "정련 자수정",
+          "resource": "자수정 섬유",
           "rate": 30,
           "side": "S",
           "pos": 0
         },
         {
-          "resource": "정련 자수정",
+          "resource": "자수정 섬유",
           "rate": 30,
           "side": "S",
           "pos": 1
         },
         {
-          "resource": "정련 자수정",
+          "resource": "자수정 섬유",
           "rate": 30,
           "side": "S",
           "pos": 2
@@ -724,7 +737,7 @@
           "name": "자수정 부품",
           "inputs": [
             {
-              "resource": "정련 자수정",
+              "resource": "자수정 섬유",
               "rate": 30
             }
           ],
@@ -740,7 +753,7 @@
           "name": "페리움 부품",
           "inputs": [
             {
-              "resource": "정련 페리움",
+              "resource": "페리움",
               "rate": 30
             }
           ],
@@ -788,7 +801,7 @@
           "name": "크리스톤 부품",
           "inputs": [
             {
-              "resource": "정련 크리스톤",
+              "resource": "크리스톤 섬유",
               "rate": 30
             }
           ],
@@ -815,6 +828,40 @@
               "rate": 30
             }
           ]
+        },
+        {
+          "id": "part_hetonite",
+          "name": "혁동 부품",
+          "inputs": [
+            {
+              "resource": "혁동",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "혁동 부품",
+              "rate": 6
+            }
+          ],
+          "note": "10초 사이클 = 6/분."
+        },
+        {
+          "id": "part_pyrrolite",
+          "name": "작동 부품",
+          "inputs": [
+            {
+              "resource": "작동",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "작동 부품",
+              "rate": 30
+            }
+          ],
+          "note": "v1.4 — 커뮤니티 확인 품목, 수치는 추정."
         }
       ]
     },
@@ -830,19 +877,19 @@
       "powerDraw": 10,
       "inputs": [
         {
-          "resource": "정련 오리지늄",
+          "resource": "자수정 섬유",
           "rate": 60,
           "side": "S",
           "pos": 0
         },
         {
-          "resource": "정련 오리지늄",
+          "resource": "자수정 섬유",
           "rate": 60,
           "side": "S",
           "pos": 1
         },
         {
-          "resource": "정련 오리지늄",
+          "resource": "자수정 섬유",
           "rate": 60,
           "side": "S",
           "pos": 2
@@ -857,19 +904,19 @@
       ],
       "outputs": [
         {
-          "resource": "병",
+          "resource": "자수정 병",
           "rate": 30,
           "side": "N",
           "pos": 0
         },
         {
-          "resource": "병",
+          "resource": "자수정 병",
           "rate": 30,
           "side": "N",
           "pos": 1
         },
         {
-          "resource": "병",
+          "resource": "자수정 병",
           "rate": 30,
           "side": "N",
           "pos": 2
@@ -883,7 +930,7 @@
           "name": "자수정 병",
           "inputs": [
             {
-              "resource": "정련 자수정",
+              "resource": "자수정 섬유",
               "rate": 60
             }
           ],
@@ -900,7 +947,7 @@
           "name": "페리움 병",
           "inputs": [
             {
-              "resource": "정련 페리움",
+              "resource": "페리움",
               "rate": 60
             }
           ],
@@ -945,7 +992,7 @@
         },
         {
           "id": "bottle_xiranite",
-          "name": "실험용 식양 병",
+          "name": "내압 병",
           "inputs": [
             {
               "resource": "식양",
@@ -954,11 +1001,11 @@
           ],
           "outputs": [
             {
-              "resource": "실험용 식양 병",
+              "resource": "내압 병",
               "rate": 30
             }
           ],
-          "note": "기체를 담는 내압 병 계열."
+          "note": "기체·특수 액체를 담는 병 (식양 재료)."
         }
       ]
     },
@@ -974,31 +1021,31 @@
       "powerDraw": 20,
       "inputs": [
         {
-          "resource": "씨앗",
+          "resource": "메밀꽃 씨앗",
           "rate": 30,
           "side": "S",
           "pos": 0
         },
         {
-          "resource": "씨앗",
+          "resource": "메밀꽃 씨앗",
           "rate": 30,
           "side": "S",
           "pos": 1
         },
         {
-          "resource": "씨앗",
+          "resource": "메밀꽃 씨앗",
           "rate": 30,
           "side": "S",
           "pos": 2
         },
         {
-          "resource": "씨앗",
+          "resource": "메밀꽃 씨앗",
           "rate": 30,
           "side": "S",
           "pos": 3
         },
         {
-          "resource": "씨앗",
+          "resource": "메밀꽃 씨앗",
           "rate": 30,
           "side": "S",
           "pos": 4
@@ -1013,31 +1060,31 @@
       ],
       "outputs": [
         {
-          "resource": "식물",
+          "resource": "메밀꽃",
           "rate": 30,
           "side": "N",
           "pos": 0
         },
         {
-          "resource": "식물",
+          "resource": "메밀꽃",
           "rate": 30,
           "side": "N",
           "pos": 1
         },
         {
-          "resource": "식물",
+          "resource": "메밀꽃",
           "rate": 30,
           "side": "N",
           "pos": 2
         },
         {
-          "resource": "식물",
+          "resource": "메밀꽃",
           "rate": 30,
           "side": "N",
           "pos": 3
         },
         {
-          "resource": "식물",
+          "resource": "메밀꽃",
           "rate": 30,
           "side": "N",
           "pos": 4
@@ -1121,6 +1168,22 @@
               "rate": 60
             }
           ]
+        },
+        {
+          "id": "grow_aketine",
+          "name": "아케톤 재배",
+          "inputs": [
+            {
+              "resource": "아케톤 씨앗",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "아케톤",
+              "rate": 30
+            }
+          ]
         }
       ]
     },
@@ -1136,31 +1199,31 @@
       "powerDraw": 10,
       "inputs": [
         {
-          "resource": "식물",
+          "resource": "메밀꽃",
           "rate": 30,
           "side": "S",
           "pos": 0
         },
         {
-          "resource": "식물",
+          "resource": "메밀꽃",
           "rate": 30,
           "side": "S",
           "pos": 1
         },
         {
-          "resource": "식물",
+          "resource": "메밀꽃",
           "rate": 30,
           "side": "S",
           "pos": 2
         },
         {
-          "resource": "식물",
+          "resource": "메밀꽃",
           "rate": 30,
           "side": "S",
           "pos": 3
         },
         {
-          "resource": "식물",
+          "resource": "메밀꽃",
           "rate": 30,
           "side": "S",
           "pos": 4
@@ -1168,31 +1231,31 @@
       ],
       "outputs": [
         {
-          "resource": "씨앗",
+          "resource": "메밀꽃 씨앗",
           "rate": 60,
           "side": "N",
           "pos": 0
         },
         {
-          "resource": "씨앗",
+          "resource": "메밀꽃 씨앗",
           "rate": 60,
           "side": "N",
           "pos": 1
         },
         {
-          "resource": "씨앗",
+          "resource": "메밀꽃 씨앗",
           "rate": 60,
           "side": "N",
           "pos": 2
         },
         {
-          "resource": "씨앗",
+          "resource": "메밀꽃 씨앗",
           "rate": 60,
           "side": "N",
           "pos": 3
         },
         {
-          "resource": "씨앗",
+          "resource": "메밀꽃 씨앗",
           "rate": 60,
           "side": "N",
           "pos": 4
@@ -1266,6 +1329,22 @@
               "rate": 30
             }
           ]
+        },
+        {
+          "id": "seed_aketine",
+          "name": "아케톤 씨앗",
+          "inputs": [
+            {
+              "resource": "아케톤",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "아케톤 씨앗",
+              "rate": 60
+            }
+          ]
         }
       ]
     },
@@ -1330,37 +1409,37 @@
       "powerDraw": 10,
       "inputs": [
         {
-          "resource": "정련 오리지늄",
+          "resource": "오리고 크러스트",
           "rate": 30,
           "side": "S",
           "pos": 0
         },
         {
-          "resource": "정련 오리지늄",
+          "resource": "자수정 섬유",
           "rate": 30,
           "side": "S",
           "pos": 1
         },
         {
-          "resource": "정련 오리지늄",
+          "resource": "오리고 크러스트",
           "rate": 30,
           "side": "S",
           "pos": 2
         },
         {
-          "resource": "정련 오리지늄",
+          "resource": "자수정 섬유",
           "rate": 30,
           "side": "S",
           "pos": 3
         },
         {
-          "resource": "정련 오리지늄",
+          "resource": "오리고 크러스트",
           "rate": 30,
           "side": "S",
           "pos": 4
         },
         {
-          "resource": "정련 오리지늄",
+          "resource": "자수정 섬유",
           "rate": 30,
           "side": "S",
           "pos": 5
@@ -1368,38 +1447,38 @@
       ],
       "outputs": [
         {
-          "resource": "장비 부품",
-          "rate": 15,
+          "resource": "자수정 장비 부품",
+          "rate": 6,
           "side": "N",
           "pos": 0
         },
         {
-          "resource": "장비 부품",
-          "rate": 15,
+          "resource": "자수정 장비 부품",
+          "rate": 6,
           "side": "N",
           "pos": 1
         },
         {
-          "resource": "장비 부품",
-          "rate": 15,
+          "resource": "자수정 장비 부품",
+          "rate": 6,
           "side": "N",
           "pos": 2
         },
         {
-          "resource": "장비 부품",
-          "rate": 15,
+          "resource": "자수정 장비 부품",
+          "rate": 6,
           "side": "N",
           "pos": 3
         },
         {
-          "resource": "장비 부품",
-          "rate": 15,
+          "resource": "자수정 장비 부품",
+          "rate": 6,
           "side": "N",
           "pos": 4
         },
         {
-          "resource": "장비 부품",
-          "rate": 15,
+          "resource": "자수정 장비 부품",
+          "rate": 6,
           "side": "N",
           "pos": 5
         }
@@ -1412,11 +1491,11 @@
           "name": "자수정 장비 부품",
           "inputs": [
             {
-              "resource": "정련 오리지늄",
+              "resource": "오리고 크러스트",
               "rate": 30
             },
             {
-              "resource": "정련 자수정",
+              "resource": "자수정 섬유",
               "rate": 30
             }
           ],
@@ -1433,11 +1512,11 @@
           "name": "페리움 장비 부품",
           "inputs": [
             {
-              "resource": "정련 오리지늄",
+              "resource": "오리고 크러스트",
               "rate": 60
             },
             {
-              "resource": "정련 페리움",
+              "resource": "페리움",
               "rate": 60
             }
           ],
@@ -1453,11 +1532,11 @@
           "name": "크리스톤 장비 부품",
           "inputs": [
             {
-              "resource": "고급 정련 오리지늄",
+              "resource": "정련 오리고 크러스트",
               "rate": 60
             },
             {
-              "resource": "정련 크리스톤",
+              "resource": "크리스톤 섬유",
               "rate": 60
             }
           ],
@@ -1477,7 +1556,7 @@
               "rate": 60
             },
             {
-              "resource": "고급 정련 오리지늄",
+              "resource": "정련 오리고 크러스트",
               "rate": 60
             }
           ],
@@ -1543,37 +1622,37 @@
       "powerDraw": 20,
       "inputs": [
         {
-          "resource": "식물 가루",
+          "resource": "자수정 병",
           "rate": 30,
           "side": "S",
           "pos": 0
         },
         {
-          "resource": "병",
+          "resource": "메밀꽃 가루",
           "rate": 30,
           "side": "S",
           "pos": 1
         },
         {
-          "resource": "식물 가루",
+          "resource": "자수정 병",
           "rate": 30,
           "side": "S",
           "pos": 2
         },
         {
-          "resource": "병",
+          "resource": "메밀꽃 가루",
           "rate": 30,
           "side": "S",
           "pos": 3
         },
         {
-          "resource": "식물 가루",
+          "resource": "자수정 병",
           "rate": 30,
           "side": "S",
           "pos": 4
         },
         {
-          "resource": "병",
+          "resource": "메밀꽃 가루",
           "rate": 30,
           "side": "S",
           "pos": 5
@@ -1588,38 +1667,38 @@
       ],
       "outputs": [
         {
-          "resource": "치료 아이템",
-          "rate": 30,
+          "resource": "메밀꽃 캡슐",
+          "rate": 6,
           "side": "N",
           "pos": 0
         },
         {
-          "resource": "치료 아이템",
-          "rate": 30,
+          "resource": "메밀꽃 캡슐",
+          "rate": 6,
           "side": "N",
           "pos": 1
         },
         {
-          "resource": "치료 아이템",
-          "rate": 30,
+          "resource": "메밀꽃 캡슐",
+          "rate": 6,
           "side": "N",
           "pos": 2
         },
         {
-          "resource": "치료 아이템",
-          "rate": 30,
+          "resource": "메밀꽃 캡슐",
+          "rate": 6,
           "side": "N",
           "pos": 3
         },
         {
-          "resource": "치료 아이템",
-          "rate": 30,
+          "resource": "메밀꽃 캡슐",
+          "rate": 6,
           "side": "N",
           "pos": 4
         },
         {
-          "resource": "치료 아이템",
-          "rate": 30,
+          "resource": "메밀꽃 캡슐",
+          "rate": 6,
           "side": "N",
           "pos": 5
         }
@@ -1629,7 +1708,7 @@
       "recipes": [
         {
           "id": "capsule_c",
-          "name": "메밀꽃 캡슐 C",
+          "name": "메밀꽃 캡슐",
           "inputs": [
             {
               "resource": "자수정 병",
@@ -1642,7 +1721,7 @@
           ],
           "outputs": [
             {
-              "resource": "메밀꽃 캡슐 C",
+              "resource": "메밀꽃 캡슐",
               "rate": 6
             }
           ],
@@ -1650,7 +1729,7 @@
         },
         {
           "id": "capsule_b",
-          "name": "메밀꽃 캡슐 B",
+          "name": "고급 메밀꽃 캡슐",
           "inputs": [
             {
               "resource": "페리움 병",
@@ -1663,10 +1742,11 @@
           ],
           "outputs": [
             {
-              "resource": "메밀꽃 캡슐 B",
+              "resource": "고급 메밀꽃 캡슐",
               "rate": 6
             }
-          ]
+          ],
+          "note": "등급 접두사는 추정 (실게임은 등급을 접두사로 표기)."
         },
         {
           "id": "fill_yazhen",
@@ -1731,6 +1811,27 @@
             }
           ],
           "note": "무릉 침식 제거용."
+        },
+        {
+          "id": "fill_water",
+          "name": "청정수 병입",
+          "inputs": [
+            {
+              "resource": "페리움 병",
+              "rate": 30
+            },
+            {
+              "resource": "청정수",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "청정수 병",
+              "rate": 30
+            }
+          ]
         }
       ]
     },
@@ -1752,8 +1853,8 @@
           "pos": 0
         },
         {
-          "resource": "고밀도 오리지늄 가루",
-          "rate": 30,
+          "resource": "오리지늄 가루",
+          "rate": 60,
           "side": "S",
           "pos": 1
         },
@@ -1764,8 +1865,8 @@
           "pos": 2
         },
         {
-          "resource": "고밀도 오리지늄 가루",
-          "rate": 30,
+          "resource": "오리지늄 가루",
+          "rate": 60,
           "side": "S",
           "pos": 3
         },
@@ -1776,45 +1877,45 @@
           "pos": 4
         },
         {
-          "resource": "고밀도 오리지늄 가루",
-          "rate": 30,
+          "resource": "오리지늄 가루",
+          "rate": 60,
           "side": "S",
           "pos": 5
         }
       ],
       "outputs": [
         {
-          "resource": "협곡 배터리",
+          "resource": "소용량 협곡 배터리",
           "rate": 6,
           "side": "N",
           "pos": 0
         },
         {
-          "resource": "협곡 배터리",
+          "resource": "소용량 협곡 배터리",
           "rate": 6,
           "side": "N",
           "pos": 1
         },
         {
-          "resource": "협곡 배터리",
+          "resource": "소용량 협곡 배터리",
           "rate": 6,
           "side": "N",
           "pos": 2
         },
         {
-          "resource": "협곡 배터리",
+          "resource": "소용량 협곡 배터리",
           "rate": 6,
           "side": "N",
           "pos": 3
         },
         {
-          "resource": "협곡 배터리",
+          "resource": "소용량 협곡 배터리",
           "rate": 6,
           "side": "N",
           "pos": 4
         },
         {
-          "resource": "협곡 배터리",
+          "resource": "소용량 협곡 배터리",
           "rate": 6,
           "side": "N",
           "pos": 5
@@ -1947,7 +2048,7 @@
         },
         {
           "id": "yazhen_c",
-          "name": "야침 주사약 C",
+          "name": "야침 주사약",
           "inputs": [
             {
               "resource": "야침 용액 병",
@@ -1960,7 +2061,7 @@
           ],
           "outputs": [
             {
-              "resource": "야침 주사약 C",
+              "resource": "야침 주사약",
               "rate": 6
             }
           ]
@@ -2171,13 +2272,13 @@
       "powerDraw": 50,
       "inputs": [
         {
-          "resource": "식물 가루",
+          "resource": "야침 가루",
           "rate": 30,
           "side": "S",
           "pos": 1
         },
         {
-          "resource": "식물 가루",
+          "resource": "야침 가루",
           "rate": 30,
           "side": "S",
           "pos": 3
@@ -2211,14 +2312,14 @@
           "pos": 3
         },
         {
-          "resource": "용액",
+          "resource": "야침 용액",
           "rate": 30,
           "transport": "pipe",
           "side": "E",
           "pos": 1
         },
         {
-          "resource": "용액",
+          "resource": "야침 용액",
           "rate": 30,
           "transport": "pipe",
           "side": "E",
@@ -2423,8 +2524,8 @@
       "powerDraw": 100,
       "inputs": [
         {
-          "resource": "식양",
-          "rate": 30,
+          "resource": "페리움 가루",
+          "rate": 15,
           "side": "S",
           "pos": 1
         },
@@ -2435,8 +2536,8 @@
           "pos": 2
         },
         {
-          "resource": "식양",
-          "rate": 30,
+          "resource": "페리움 가루",
+          "rate": 15,
           "side": "S",
           "pos": 3
         },
@@ -2447,15 +2548,15 @@
           "pos": 4
         },
         {
-          "resource": "오염수",
-          "rate": 15,
+          "resource": "액화 식양",
+          "rate": 30,
           "transport": "pipe",
           "side": "W",
           "pos": 1
         },
         {
-          "resource": "청정수",
-          "rate": 30,
+          "resource": "오염수",
+          "rate": 15,
           "transport": "pipe",
           "side": "W",
           "pos": 3
@@ -2469,8 +2570,8 @@
           "pos": 1
         },
         {
-          "resource": "불활성 양정 폐액",
-          "rate": 30,
+          "resource": "양정",
+          "rate": 15,
           "side": "N",
           "pos": 2
         },
@@ -2481,21 +2582,21 @@
           "pos": 3
         },
         {
-          "resource": "불활성 양정 폐액",
-          "rate": 30,
+          "resource": "양정",
+          "rate": 15,
           "side": "N",
           "pos": 4
         },
         {
-          "resource": "any",
-          "rate": 0,
+          "resource": "불활성 양정 폐액",
+          "rate": 30,
           "transport": "pipe",
           "side": "E",
           "pos": 1
         },
         {
-          "resource": "any",
-          "rate": 0,
+          "resource": "불활성 양정 폐액",
+          "rate": 30,
           "transport": "pipe",
           "side": "E",
           "pos": 3
@@ -2574,31 +2675,31 @@
       "maxPerBase": 12,
       "inputs": [
         {
-          "resource": "카본 조각",
+          "resource": "고밀도 카본 가루",
           "rate": 30,
           "side": "S",
           "pos": 0
         },
         {
-          "resource": "카본 조각",
+          "resource": "고밀도 카본 가루",
           "rate": 30,
           "side": "S",
           "pos": 1
         },
         {
-          "resource": "카본 조각",
+          "resource": "고밀도 카본 가루",
           "rate": 30,
           "side": "S",
           "pos": 2
         },
         {
-          "resource": "카본 조각",
+          "resource": "고밀도 카본 가루",
           "rate": 30,
           "side": "S",
           "pos": 3
         },
         {
-          "resource": "카본 조각",
+          "resource": "고밀도 카본 가루",
           "rate": 30,
           "side": "S",
           "pos": 4
@@ -2643,7 +2744,7 @@
           "pos": 4
         }
       ],
-      "note": "식양(무릉 전력 물질) 생산. 최대 배치 개수 제한(연구로 확장). 기체 모드 연구 시 카본+청정수+활성 대기로 공정 단축.",
+      "note": "식양(무릉 전력 물질) 생산. 최대 배치 개수 제한(연구로 확장). 기체 모드 연구 시 카본+청정수+비활성 기체로 공정 단축.",
       "image": "icons/skyfire_furnace.png",
       "recipes": [
         {
@@ -2677,7 +2778,7 @@
               "rate": 30
             },
             {
-              "resource": "활성 대기",
+              "resource": "비활성 기체",
               "rate": 30,
               "transport": "pipe"
             }
@@ -2688,7 +2789,7 @@
               "rate": 30
             }
           ],
-          "note": "v1.4 기체 모드 — 공정 대폭 단축. 실제로는 청정수도 함께 필요."
+          "note": "v1.4 기체 모드 — 공정 대폭 단축 (실제로는 청정수도 함께 필요)."
         },
         {
           "id": "heavy_xiranite",
@@ -2828,7 +2929,7 @@
               "transport": "pipe"
             }
           ],
-          "note": "v1.4 — 필터를 소모해 기체를 정제."
+          "note": "v1.4 — 필터를 소모해 기체를 정제. 필터는 생산 설비가 없으므로 창고 출력 포트로 공급."
         }
       ]
     },
@@ -2844,37 +2945,37 @@
       "powerDraw": 20,
       "inputs": [
         {
-          "resource": "액체가 담긴 병",
+          "resource": "야침 용액 병",
           "rate": 30,
           "side": "S",
           "pos": 0
         },
         {
-          "resource": "액체가 담긴 병",
+          "resource": "야침 용액 병",
           "rate": 30,
           "side": "S",
           "pos": 1
         },
         {
-          "resource": "액체가 담긴 병",
+          "resource": "야침 용액 병",
           "rate": 30,
           "side": "S",
           "pos": 2
         },
         {
-          "resource": "액체가 담긴 병",
+          "resource": "야침 용액 병",
           "rate": 30,
           "side": "S",
           "pos": 3
         },
         {
-          "resource": "액체가 담긴 병",
+          "resource": "야침 용액 병",
           "rate": 30,
           "side": "S",
           "pos": 4
         },
         {
-          "resource": "액체가 담긴 병",
+          "resource": "야침 용액 병",
           "rate": 30,
           "side": "S",
           "pos": 5
@@ -2882,43 +2983,43 @@
       ],
       "outputs": [
         {
-          "resource": "병",
+          "resource": "페리움 병",
           "rate": 30,
           "side": "N",
           "pos": 0
         },
         {
-          "resource": "병",
+          "resource": "페리움 병",
           "rate": 30,
           "side": "N",
           "pos": 1
         },
         {
-          "resource": "병",
+          "resource": "페리움 병",
           "rate": 30,
           "side": "N",
           "pos": 2
         },
         {
-          "resource": "병",
+          "resource": "페리움 병",
           "rate": 30,
           "side": "N",
           "pos": 3
         },
         {
-          "resource": "병",
+          "resource": "페리움 병",
           "rate": 30,
           "side": "N",
           "pos": 4
         },
         {
-          "resource": "병",
+          "resource": "페리움 병",
           "rate": 30,
           "side": "N",
           "pos": 5
         },
         {
-          "resource": "용액",
+          "resource": "야침 용액",
           "rate": 30,
           "transport": "pipe",
           "side": "E",
@@ -2996,7 +3097,7 @@
     {
       "id": "gas_collector",
       "name": "기체 수집기",
-      "category": "기체 공업",
+      "category": "자원 채집",
       "icon": "🫧",
       "footprint": {
         "w": 3,
@@ -3013,7 +3114,7 @@
           "pos": 1
         }
       ],
-      "note": "기체 간헐천 위에 설치해 기체를 채집(영문명 Gas Extractor, 3×3 실측). 전력 불필요, 회수용 암관(최대 300m) 연결. 간헐천 종류에 따라 채집 기체가 다릅니다.",
+      "note": "기체 간헐천 위에 설치해 기체를 채집(영문명 Gas Extractor, 3×3 실측). 전력 불필요, 회수용 암관(최대 300M) 연결. 간헐천 종류에 따라 비활성 기체 또는 식양 기체.",
       "recipes": [
         {
           "id": "inergen",
@@ -3037,18 +3138,6 @@
             }
           ],
           "note": "식양 기체 간헐천 위에 설치."
-        },
-        {
-          "id": "atmosphere",
-          "name": "활성 대기 채집",
-          "outputs": [
-            {
-              "resource": "활성 대기",
-              "rate": 30,
-              "transport": "pipe"
-            }
-          ],
-          "note": "천화로 기체 모드 재료. 명칭은 일부 추정."
         }
       ],
       "image": "icons/gas_collector.png"
@@ -3056,7 +3145,7 @@
     {
       "id": "gas_liquid_conv",
       "name": "기체-액체 변환기",
-      "category": "기체 공업",
+      "category": "합성 및 제작",
       "icon": "🔃",
       "footprint": {
         "w": 5,
@@ -3065,15 +3154,15 @@
       "powerDraw": 20,
       "inputs": [
         {
-          "resource": "any",
-          "rate": 0,
+          "resource": "적동 용액",
+          "rate": 60,
           "transport": "pipe",
           "side": "W",
           "pos": 1
         },
         {
-          "resource": "any",
-          "rate": 0,
+          "resource": "식양 기체",
+          "rate": 6,
           "transport": "pipe",
           "side": "W",
           "pos": 3
@@ -3081,8 +3170,8 @@
       ],
       "outputs": [
         {
-          "resource": "any",
-          "rate": 0,
+          "resource": "적동 기체",
+          "rate": 30,
           "transport": "pipe",
           "side": "E",
           "pos": 2
@@ -3213,7 +3302,7 @@
     {
       "id": "solid_gas_conv",
       "name": "고체-기체 변환기",
-      "category": "기체 공업",
+      "category": "합성 및 제작",
       "icon": "🌫️",
       "footprint": {
         "w": 5,
@@ -3222,20 +3311,20 @@
       "powerDraw": 20,
       "inputs": [
         {
-          "resource": "any",
-          "rate": 0,
+          "resource": "혁동",
+          "rate": 30,
           "side": "S",
           "pos": 1
         },
         {
-          "resource": "any",
-          "rate": 0,
+          "resource": "혁동",
+          "rate": 30,
           "side": "S",
           "pos": 3
         },
         {
-          "resource": "any",
-          "rate": 0,
+          "resource": "액화 식양",
+          "rate": 6,
           "transport": "pipe",
           "side": "W",
           "pos": 2
@@ -3249,8 +3338,8 @@
           "pos": 2
         },
         {
-          "resource": "any",
-          "rate": 0,
+          "resource": "혁동 기체",
+          "rate": 60,
           "transport": "pipe",
           "side": "E",
           "pos": 2
@@ -3376,7 +3465,7 @@
     {
       "id": "gas_reactor",
       "name": "기체 반응기",
-      "category": "기체 공업",
+      "category": "합성 및 제작",
       "icon": "💨",
       "footprint": {
         "w": 5,
@@ -3385,15 +3474,15 @@
       "powerDraw": 50,
       "inputs": [
         {
-          "resource": "any",
-          "rate": 0,
+          "resource": "혁동 기체",
+          "rate": 60,
           "transport": "pipe",
           "side": "W",
           "pos": 1
         },
         {
-          "resource": "any",
-          "rate": 0,
+          "resource": "식양 기체",
+          "rate": 30,
           "transport": "pipe",
           "side": "W",
           "pos": 3
@@ -3401,8 +3490,8 @@
       ],
       "outputs": [
         {
-          "resource": "any",
-          "rate": 0,
+          "resource": "작동 기체",
+          "rate": 30,
           "transport": "pipe",
           "side": "E",
           "pos": 2
@@ -3440,7 +3529,7 @@
     {
       "id": "gas_tank",
       "name": "기체 저장 탱크",
-      "category": "기체 공업",
+      "category": "물류 장치",
       "icon": "🎈",
       "footprint": {
         "w": 3,
@@ -3472,7 +3561,7 @@
     {
       "id": "gas_disperser",
       "name": "기체 방출기",
-      "category": "기체 공업",
+      "category": "합성 및 제작",
       "icon": "🌬️",
       "footprint": {
         "w": 3,
@@ -4010,7 +4099,7 @@
       "powerRange": 80,
       "inputs": [],
       "outputs": [],
-      "note": "반경 80m 전력 배급 중계 설비(일명 전봇대). 80m마다 연쇄 설치 필요. 연구 후 미니 전력 공급기 역할도 수행.",
+      "note": "반경 80M 전력 배급 중계 설비(일명 전봇대). 80M마다 연쇄 설치 필요. 연구 후 미니 전력 공급기 역할도 수행.",
       "image": "icons/relay.png"
     },
     {
@@ -4026,7 +4115,7 @@
       "powerRange": 80,
       "inputs": [],
       "outputs": [],
-      "note": "무릉 전용 중계기. 80m 내 식양 전력 설비에 자동 연결. 일반 버전과 호환 불가.",
+      "note": "무릉 전용 중계기. 80M 내 식양 전력 설비에 자동 연결. 일반 버전과 호환 불가.",
       "image": "icons/shiyang_relay.png"
     },
     {
@@ -4042,7 +4131,7 @@
       "powerRange": 30,
       "inputs": [],
       "outputs": [],
-      "note": "범위 내 설비에 무선 전력 공급. 연구 완료 시 30m 단거리 전송(미니 중계기) 가능.",
+      "note": "범위 내 설비에 무선 전력 공급. 연구 완료 시 30M 단거리 전송(미니 중계기) 가능.",
       "image": "icons/power_supplier.png"
     },
     {
@@ -4058,7 +4147,7 @@
       "powerRange": 30,
       "inputs": [],
       "outputs": [],
-      "note": "무릉 전용 전력 공급기. 80m 내 코어/식양 중계기에 자동 연결, 30m 단거리 전송.",
+      "note": "무릉 전용 전력 공급기. 80M 내 코어/식양 중계기에 자동 연결, 30M 단거리 전송.",
       "image": "icons/shiyang_supplier.png"
     },
     {
@@ -4073,13 +4162,13 @@
       "powerDraw": 0,
       "inputs": [
         {
-          "resource": "협곡 배터리",
+          "resource": "소용량 협곡 배터리",
           "rate": 1.5,
           "side": "S",
           "pos": 0
         },
         {
-          "resource": "협곡 배터리",
+          "resource": "소용량 협곡 배터리",
           "rate": 1.5,
           "side": "S",
           "pos": 1
@@ -4308,7 +4397,7 @@
         }
       ],
       "outputs": [],
-      "note": "지하 암관 입구(최대 200m, 전력 불필요). 이 도구에서는 입구→출구를 연결선으로 이어 표현. 자체 500단위 저장.",
+      "note": "지하 암관 입구(최대 200M, 전력 불필요). 이 도구에서는 입구→출구를 연결선으로 이어 표현. 자체 500단위 저장.",
       "image": "icons/duct_inlet.png"
     },
     {
@@ -4453,7 +4542,7 @@
       "powerDraw": 5,
       "inputs": [],
       "outputs": [],
-      "note": "최대 80m 집라인 설치. 직선상 장애물이 있으면 연결 불가.",
+      "note": "최대 80M 집라인 설치. 직선상 장애물이 있으면 연결 불가.",
       "image": "icons/zipline_hook.png"
     },
     {
@@ -4468,7 +4557,7 @@
       "powerDraw": 5,
       "inputs": [],
       "outputs": [],
-      "note": "최대 110m 집라인 + 연속 이동 기능. 크리스톤 부품의 유일한 사용처.",
+      "note": "최대 110M 집라인 + 연속 이동 기능. 크리스톤 부품의 유일한 사용처.",
       "image": "icons/long_zipline_hook.png"
     },
     {
@@ -4543,7 +4632,7 @@
       "powerDraw": 5,
       "inputs": [],
       "outputs": [],
-      "note": "단일 대상 물리 피해(공격력 609 / 2초 / 15m). 전력망 연결 또는 배터리 투입으로 가동.",
+      "note": "단일 대상 물리 피해(공격력 609 / 2초 / 15M). 전력망 연결 또는 배터리 투입으로 가동.",
       "image": "icons/gun_tower.png"
     },
     {
@@ -4558,7 +4647,7 @@
       "powerDraw": 5,
       "inputs": [],
       "outputs": [],
-      "note": "5초마다 6m 내 오퍼레이터 치유.",
+      "note": "5초마다 6M 내 오퍼레이터 치유.",
       "image": "icons/medical_tower.png"
     },
     {
@@ -4573,7 +4662,7 @@
       "powerDraw": 10,
       "inputs": [],
       "outputs": [],
-      "note": "범위 물리 피해(공격력 981 / 3초 / 12.5m). 초반 방어전 주력.",
+      "note": "범위 물리 피해(공격력 981 / 3초 / 12.5M). 초반 방어전 주력.",
       "image": "icons/grenade_tower.png"
     },
     {
@@ -4588,7 +4677,7 @@
       "powerDraw": 20,
       "inputs": [],
       "outputs": [],
-      "note": "최대 2회 튕기는 전기 피해(공격력 4886 / 3초 / 12.5m).",
+      "note": "최대 2회 튕기는 전기 피해(공격력 4886 / 3초 / 12.5M).",
       "image": "icons/current_tower.png"
     },
     {
@@ -4603,7 +4692,7 @@
       "powerDraw": 20,
       "inputs": [],
       "outputs": [],
-      "note": "고위협 적 우선 저격(공격력 11634 / 5초 / 20m).",
+      "note": "고위협 적 우선 저격(공격력 11634 / 5초 / 20M).",
       "image": "icons/watch_tower.png"
     },
     {
@@ -4618,7 +4707,7 @@
       "powerDraw": 20,
       "inputs": [],
       "outputs": [],
-      "note": "최대 범위·최고 화력의 포격 설비(공격력 33000 / 8초 / 25m). v1.2 추가.",
+      "note": "최대 범위·최고 화력의 포격 설비(공격력 33000 / 8초 / 25M). v1.2 추가.",
       "image": "icons/core_mortar.png"
     }
   ]
