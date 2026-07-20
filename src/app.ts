@@ -38,6 +38,7 @@ export function startApp(): void {
   let paletteDrag: { typeId: string; startX: number; startY: number; moved: boolean } | null = null;
   let moveDrag: { id: number; offX: number; offY: number; origX: number; origY: number; moved: boolean } | null = null;
   let pan: { sx: number; sy: number; vx: number; vy: number; moved: boolean } | null = null;
+  let wpDrag: { connId: number; index: number; inserted: boolean; origWaypoints: { x: number; y: number }[]; moved: boolean } | null = null;
   let pending: { moduleId: number; portKey: string; waypoints: { x: number; y: number }[] } | null = null;
   let mouseCell: Pt = { x: 0, y: 0 };
   let mousePx: Pt = { x: 0, y: 0 };
@@ -202,6 +203,29 @@ export function startApp(): void {
     const a = portByKey(fm, c.fromPort);
     const b = portByKey(tm, c.toPort);
     return a && b ? [{ x: a.x, y: a.y }, { x: b.x, y: b.y }] : null;
+  }
+  /** 선택된 연결의 경유지 핸들 히트 테스트 → 인덱스 (-1 = 없음) */
+  function hitWaypointHandle(c: { waypoints?: { x: number; y: number }[] }, wpt: Pt): number {
+    const rad = Math.max(0.35, 9 / (CELL * view.scale));
+    const wps = c.waypoints ?? [];
+    for (let i = 0; i < wps.length; i++) {
+      if (Math.hypot(wps[i].x + 0.5 - wpt.x, wps[i].y + 0.5 - wpt.y) <= rad) return i;
+    }
+    return -1;
+  }
+  /** 경로 위 칸을 잡았을 때 새 경유지를 끼워 넣을 배열 인덱스 */
+  function insertionIndex(c: { id: number; waypoints?: { x: number; y: number }[] }, cell: { x: number; y: number }): number {
+    const cells = routeInfo.cells.get(c.id);
+    const wps = c.waypoints ?? [];
+    if (!cells) return wps.length;
+    const cellIdx = cells.findIndex((cc) => cc.x === cell.x && cc.y === cell.y);
+    if (cellIdx < 0) return wps.length;
+    let n = 0;
+    for (const wp of wps) {
+      const wi = cells.findIndex((cc) => cc.x === wp.x && cc.y === wp.y);
+      if (wi >= 0 && wi <= cellIdx) n++;
+    }
+    return n;
   }
   function hitConn(wpt: Pt): Hover | null {
     const tol = Math.max(0.3, 7 / (CELL * view.scale));
@@ -386,14 +410,18 @@ export function startApp(): void {
         ctx.textBaseline = 'middle';
         ctx.fillText(routed ? '⚠️' : '🚫', ms.x, ms.y - 10);
       }
-      // 선택된 연결의 경유지 표시
+      // 선택된 연결의 경유지 핸들 (드래그 이동 · 더블클릭 삭제)
       if (isSel && c.waypoints?.length) {
         for (const wpt of c.waypoints) {
           const cp = sOf(wpt.x + 0.5, wpt.y + 0.5);
+          const r = Math.max(4, s * 0.18);
           ctx.beginPath();
-          ctx.arc(cp.x, cp.y, Math.max(3, s * 0.14), 0, Math.PI * 2);
+          ctx.arc(cp.x, cp.y, r, 0, Math.PI * 2);
           ctx.fillStyle = cssVar('--accent');
           ctx.fill();
+          ctx.strokeStyle = cssVar('--bg-canvas');
+          ctx.lineWidth = 2;
+          ctx.stroke();
         }
       }
     }
@@ -721,6 +749,28 @@ export function startApp(): void {
       return;
     }
 
+    // 선택된 연결: 경유지 핸들 드래그 시작 / 경로 위 클릭 → 경유지 삽입 후 드래그
+    if (!pending && selected?.kind === 'conn') {
+      const c = state.connections.find((x) => x.id === selected!.id);
+      if (c) {
+        const wi = hitWaypointHandle(c, w);
+        if (wi >= 0) {
+          wpDrag = { connId: c.id, index: wi, inserted: false, origWaypoints: structuredClone(c.waypoints ?? []), moved: false };
+          return;
+        }
+        if (!ph && !hitModule(w) && hitConn(w)?.id === c.id) {
+          const cell = { x: Math.floor(w.x), y: Math.floor(w.y) };
+          const orig = structuredClone(c.waypoints ?? []);
+          const idx = insertionIndex(c, cell);
+          c.waypoints = c.waypoints ?? [];
+          c.waypoints.splice(idx, 0, cell);
+          wpDrag = { connId: c.id, index: idx, inserted: true, origWaypoints: orig, moved: false };
+          recompute();
+          return;
+        }
+      }
+    }
+
     // 연결 그리는 중: 클릭한 칸을 경유지로 추가
     if (pending) {
       const cell = { x: Math.floor(w.x), y: Math.floor(w.y) };
@@ -780,6 +830,19 @@ export function startApp(): void {
       ghost.onCanvas = overCanvas;
       updateGhostPos();
     }
+    if (wpDrag) {
+      const c = state.connections.find((x) => x.id === wpDrag!.connId);
+      if (c?.waypoints) {
+        const cell = { x: Math.floor(mouseCell.x), y: Math.floor(mouseCell.y) };
+        const cur = c.waypoints[wpDrag.index];
+        if (cur && (cur.x !== cell.x || cur.y !== cell.y)) {
+          c.waypoints[wpDrag.index] = cell;
+          wpDrag.moved = true;
+          recompute();
+        }
+      }
+      return;
+    }
     if (moveDrag) {
       const m = modById(moveDrag.id);
       if (m) {
@@ -805,6 +868,24 @@ export function startApp(): void {
   window.addEventListener('mouseup', (e) => {
     requestRender();
     if (pan) { pan = null; return; }
+    if (wpDrag) {
+      const c = state.connections.find((x) => x.id === wpDrag!.connId);
+      if (c) {
+        if (routeInfo.unrouted.has(c.id)) {
+          c.waypoints = wpDrag.origWaypoints.length ? wpDrag.origWaypoints : undefined;
+          recompute();
+          toast('그 위치로는 경로를 만들 수 없어 되돌렸습니다');
+        } else if (!wpDrag.moved && wpDrag.inserted) {
+          c.waypoints!.splice(wpDrag.index, 1);
+          if (!c.waypoints!.length) c.waypoints = undefined;
+          recompute();
+        } else if (wpDrag.moved || wpDrag.inserted) {
+          scheduleSave();
+        }
+      }
+      wpDrag = null;
+      return;
+    }
     if (paletteDrag) {
       const p = canvasPos(e);
       const overCanvas = p.x >= 0 && p.y >= 0 && p.x <= wrap.clientWidth && p.y <= wrap.clientHeight;
@@ -838,6 +919,29 @@ export function startApp(): void {
         }
       }
       moveDrag = null;
+    }
+  });
+
+  wrap.addEventListener('dblclick', (e) => {
+    // 선택된 연결의 경유지 더블클릭 → 삭제
+    if (selected?.kind !== 'conn') return;
+    const c = state.connections.find((x) => x.id === selected!.id);
+    if (!c?.waypoints?.length) return;
+    const p = canvasPos(e);
+    const wpt = wOf(p.x, p.y);
+    const wi = hitWaypointHandle(c, wpt);
+    if (wi < 0) return;
+    const orig = structuredClone(c.waypoints);
+    c.waypoints.splice(wi, 1);
+    if (!c.waypoints.length) c.waypoints = undefined;
+    recompute();
+    if (routeInfo.unrouted.has(c.id)) {
+      c.waypoints = orig;
+      recompute();
+      toast('이 경유지를 지우면 경로를 만들 수 없습니다');
+    } else {
+      scheduleSave();
+      toast('경유지를 삭제했습니다');
     }
   });
 
@@ -984,6 +1088,7 @@ export function startApp(): void {
         </div>
         ${flowInfo.bottlenecks.has(c.id) ? '<div class="warn-box">⚠️ 병목 구간입니다. 공급 라인을 추가하세요.</div>' : ''}
         ${routeInfo.unrouted.has(c.id) ? '<div class="danger-box">🚫 경로를 찾지 못했습니다. 주변 설비/라인을 옮겨 공간을 확보하세요.</div>' : ''}
+        <div class="note-box">💡 경유지(파란 점)를 드래그해 경로를 수정하세요. 선을 잡아끌면 경유지가 추가되고, 경유지 더블클릭 시 삭제됩니다.</div>
         <div class="btn-row"><button class="btn danger" id="btnDelConn">🗑 연결 삭제</button></div>
       ` + legend;
       $('btnDelConn').addEventListener('click', deleteSelected);

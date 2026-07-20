@@ -247,10 +247,20 @@ export function routeThrough(
   let cells: { x: number; y: number }[] = [];
   let cursor = A.cell;
   let axis = A.axis;
+  const startKey = cellKey(A.cell.x, A.cell.y);
+  const endKey = cellKey(endSpec.cell.x, endSpec.cell.y);
 
   for (let i = 0; i < targets.length; i++) {
     const t = targets[i];
-    const leg = astarLeg(cursor, axis, t.cell, t.axis, blocked, otherBits, ownBits, i === 0);
+    // 다구간일 때 중간 구간이 시작/도착 앵커 칸(포트 스텁 자리)을 침범해 자기 경로와
+    // 충돌하는 것을 방지 — 마지막 구간만 도착 칸에, 첫 구간만 시작 칸에 접근 가능
+    let blk = blocked;
+    if (targets.length > 1) {
+      blk = new Set(blocked);
+      if (i < targets.length - 1) blk.add(endKey);
+      if (i > 0) blk.add(startKey);
+    }
+    const leg = astarLeg(cursor, axis, t.cell, t.axis, blk, otherBits, ownBits, i === 0);
     if (!leg) return null;
     addOwnSegs(leg.cells);
     cells = cells.length ? cells.concat(leg.cells.slice(1)) : leg.cells;
