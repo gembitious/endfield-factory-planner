@@ -3854,7 +3854,8 @@
         }
       ],
       "note": "기지의 중심이자 전력의 원천. 여기서부터 중계기 체인으로 전력망을 확장.",
-      "image": "icons/protocol_core.png"
+      "image": "icons/protocol_core.png",
+      "powerGen": 200
     },
     {
       "id": "sub_core",
@@ -3993,7 +3994,8 @@
         }
       ],
       "note": "원거리 확장용 보조 코어.",
-      "image": "icons/sub_core.png"
+      "image": "icons/sub_core.png",
+      "powerGen": 200
     },
     {
       "id": "relay",
@@ -4084,8 +4086,78 @@
         }
       ],
       "outputs": [],
-      "note": "오리지늄/배터리를 연료로 지역 전체 전력 생산(배터리 1개당 40초 가동). 배터리 1라인(6/분)으로 뱅크 4대 가동 가능.",
-      "image": "icons/thermal_bank.png"
+      "note": "연료(오리지늄/배터리)로 지역 전체 전력을 생산 (전력망 연결 필요). 발전량은 연료 종류에 따라 50~3200. 상태바의 전력 수지에 합산됩니다.",
+      "image": "icons/thermal_bank.png",
+      "recipes": [
+        {
+          "id": "fuel_lc_valley",
+          "name": "소용량 협곡 배터리 (전력 220)",
+          "inputs": [
+            {
+              "resource": "소용량 협곡 배터리",
+              "rate": 1.5
+            }
+          ],
+          "powerGen": 220,
+          "note": "배터리 1개당 40초 가동. 포장기 1라인(6/분)으로 뱅크 4대 가동."
+        },
+        {
+          "id": "fuel_sc_valley",
+          "name": "중용량 협곡 배터리 (전력 420)",
+          "inputs": [
+            {
+              "resource": "중용량 협곡 배터리",
+              "rate": 1.5
+            }
+          ],
+          "powerGen": 420
+        },
+        {
+          "id": "fuel_hc_valley",
+          "name": "대용량 협곡 배터리 (전력 1100)",
+          "inputs": [
+            {
+              "resource": "대용량 협곡 배터리",
+              "rate": 1.5
+            }
+          ],
+          "powerGen": 1100
+        },
+        {
+          "id": "fuel_lc_wuling",
+          "name": "소용량 무릉 배터리 (전력 1600)",
+          "inputs": [
+            {
+              "resource": "소용량 무릉 배터리",
+              "rate": 1.5
+            }
+          ],
+          "powerGen": 1600
+        },
+        {
+          "id": "fuel_sc_wuling",
+          "name": "중용량 무릉 배터리 (전력 3200)",
+          "inputs": [
+            {
+              "resource": "중용량 무릉 배터리",
+              "rate": 1.5
+            }
+          ],
+          "powerGen": 3200
+        },
+        {
+          "id": "fuel_origium",
+          "name": "오리지늄 광물 (전력 50)",
+          "inputs": [
+            {
+              "resource": "오리지늄 광물",
+              "rate": 7.5
+            }
+          ],
+          "powerGen": 50,
+          "note": "오리지늄 1개당 8초 가동."
+        }
+      ]
     },
     {
       "id": "protocol_storage",

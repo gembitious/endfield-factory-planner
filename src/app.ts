@@ -36,9 +36,9 @@ export function startApp(): void {
   let ghost: Ghost | null = null;
   let armedType: string | null = null;
   let paletteDrag: { typeId: string; startX: number; startY: number; moved: boolean } | null = null;
-  let moveDrag: { id: number; offX: number; offY: number; origX: number; origY: number; moved: boolean } | null = null;
+  let moveDrag: { id: number; offX: number; offY: number; origX: number; origY: number; moved: boolean; snap: string } | null = null;
   let pan: { sx: number; sy: number; vx: number; vy: number; moved: boolean } | null = null;
-  let wpDrag: { connId: number; index: number; inserted: boolean; origWaypoints: { x: number; y: number }[]; moved: boolean } | null = null;
+  let wpDrag: { connId: number; index: number; inserted: boolean; origWaypoints: { x: number; y: number }[]; moved: boolean; snap: string } | null = null;
   let pending: { moduleId: number; portKey: string; waypoints: { x: number; y: number }[] } | null = null;
   let mouseCell: Pt = { x: 0, y: 0 };
   let mousePx: Pt = { x: 0, y: 0 };
@@ -104,8 +104,50 @@ export function startApp(): void {
     requestRender();
   }
 
+  /* ── 실행 취소/다시 실행 ── */
+  const undoStack: string[] = [];
+  const redoStack: string[] = [];
+  const snapshot = (): string => JSON.stringify(serialize(state, siteId));
+  /** 뮤테이션 직전에 호출. snap 인자를 주면 그 시점(드래그 시작 등)의 스냅샷을 사용 */
+  function pushHistory(snap?: string): void {
+    const s = snap ?? snapshot();
+    if (undoStack[undoStack.length - 1] === s) return;
+    undoStack.push(s);
+    if (undoStack.length > 100) undoStack.shift();
+    redoStack.length = 0;
+  }
+  function restoreSnapshot(s: string): void {
+    try {
+      const data = JSON.parse(s);
+      deserializeInto(state, data);
+      siteId = typeof data.site === 'string' && SITES.some((x) => x.id === data.site) ? data.site : null;
+      ($('siteSel') as HTMLSelectElement).value = siteId ?? '';
+      selected = null;
+      pending = null;
+      recompute();
+      scheduleSave();
+    } catch (e) {
+      console.warn('스냅샷 복원 실패', e);
+    }
+  }
+  function undo(): void {
+    const cur = snapshot();
+    while (undoStack.length && undoStack[undoStack.length - 1] === cur) undoStack.pop();
+    const s = undoStack.pop();
+    if (s === undefined) { toast('되돌릴 작업이 없습니다'); return; }
+    redoStack.push(cur);
+    restoreSnapshot(s);
+  }
+  function redo(): void {
+    const s = redoStack.pop();
+    if (s === undefined) { toast('다시 실행할 작업이 없습니다'); return; }
+    undoStack.push(snapshot());
+    restoreSnapshot(s);
+  }
+
   /* ── 조작(뮤테이션) ── */
   function addModule(typeId: string, x: number, y: number, rot: number): ModuleInst {
+    pushHistory();
     const m: ModuleInst = { id: state.nextId++, typeId, x, y, rot: rot || 0 };
     state.modules.push(m);
     selected = { kind: 'module', id: m.id };
@@ -115,6 +157,7 @@ export function startApp(): void {
   }
   function deleteSelected(): void {
     if (!selected) return;
+    pushHistory();
     if (selected.kind === 'module') {
       const id = selected.id;
       state.modules = state.modules.filter((m) => m.id !== id);
@@ -138,6 +181,7 @@ export function startApp(): void {
       if (canPlace(state.modules, m.typeId, m.x, m.y, nr, m.id)
         && !rectBlockedByRoutes(routeInfo, state, { x: m.x, y: m.y, w: nd.w, h: nd.h }, m.id)
         && siteAllowsPlacement(m.typeId, m.x, m.y, nd.w, nd.h)) {
+        pushHistory();
         m.rot = nr;
         recompute();
         scheduleSave();
@@ -175,6 +219,7 @@ export function startApp(): void {
     }
     // 경유지는 출력 포트 기준 순서로 저장 (입력 포트부터 그렸다면 뒤집기)
     const wp = a.port.kind === 'output' ? waypoints : [...waypoints].reverse();
+    pushHistory();
     const conn = {
       id: state.nextId++,
       fromModuleId: from.moduleId, fromPort: from.port.key,
@@ -807,16 +852,17 @@ export function startApp(): void {
       if (c) {
         const wi = hitWaypointHandle(c, w);
         if (wi >= 0) {
-          wpDrag = { connId: c.id, index: wi, inserted: false, origWaypoints: structuredClone(c.waypoints ?? []), moved: false };
+          wpDrag = { connId: c.id, index: wi, inserted: false, origWaypoints: structuredClone(c.waypoints ?? []), moved: false, snap: snapshot() };
           return;
         }
         if (!ph && !hitModule(w) && hitConn(w)?.id === c.id) {
+          const snap = snapshot();
           const cell = { x: Math.floor(w.x), y: Math.floor(w.y) };
           const orig = structuredClone(c.waypoints ?? []);
           const idx = insertionIndex(c, cell);
           c.waypoints = c.waypoints ?? [];
           c.waypoints.splice(idx, 0, cell);
-          wpDrag = { connId: c.id, index: idx, inserted: true, origWaypoints: orig, moved: false };
+          wpDrag = { connId: c.id, index: idx, inserted: true, origWaypoints: orig, moved: false, snap };
           recompute();
           return;
         }
@@ -841,7 +887,7 @@ export function startApp(): void {
       pending = null;
       selected = { kind: 'module', id: mh.id };
       const m = modById(mh.id)!;
-      moveDrag = { id: m.id, offX: w.x - m.x, offY: w.y - m.y, origX: m.x, origY: m.y, moved: false };
+      moveDrag = { id: m.id, offX: w.x - m.x, offY: w.y - m.y, origX: m.x, origY: m.y, moved: false, snap: snapshot() };
       renderInfo();
       return;
     }
@@ -932,6 +978,7 @@ export function startApp(): void {
           if (!c.waypoints!.length) c.waypoints = undefined;
           recompute();
         } else if (wpDrag.moved || wpDrag.inserted) {
+          pushHistory(wpDrag.snap);
           scheduleSave();
         }
       }
@@ -969,6 +1016,7 @@ export function startApp(): void {
           toast('겹치는 위치에는 놓을 수 없습니다');
           recompute();
         } else {
+          pushHistory(moveDrag.snap);
           scheduleSave();
         }
       }
@@ -985,6 +1033,7 @@ export function startApp(): void {
     const wpt = wOf(p.x, p.y);
     const wi = hitWaypointHandle(c, wpt);
     if (wi < 0) return;
+    const snap = snapshot();
     const orig = structuredClone(c.waypoints);
     c.waypoints.splice(wi, 1);
     if (!c.waypoints.length) c.waypoints = undefined;
@@ -994,6 +1043,7 @@ export function startApp(): void {
       recompute();
       toast('이 경유지를 지우면 경로를 만들 수 없습니다');
     } else {
+      pushHistory(snap);
       scheduleSave();
       toast('경유지를 삭제했습니다');
     }
@@ -1013,8 +1063,18 @@ export function startApp(): void {
 
   window.addEventListener('keydown', (e) => {
     const tag = (e.target as HTMLElement).tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
     requestRender();
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+      e.preventDefault();
+      if (e.shiftKey) redo(); else undo();
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+      e.preventDefault();
+      redo();
+      return;
+    }
     if (e.key === 'r' || e.key === 'R' || e.key === 'ㄱ') rotateTarget();
     else if (e.key === 'Backspace' && pending) {
       // 그리는 중: 마지막 경유지 취소 (없으면 그리기 자체를 취소)
@@ -1103,12 +1163,56 @@ export function startApp(): void {
       </div>`;
 
     if (!selected) {
-      el.innerHTML = `<div class="empty">
+      // 생산 요약 (명목 수치 — 활성 레시피 기준, 병목/미연결 미반영)
+      const produced: Record<string, number> = {};
+      const consumed: Record<string, number> = {};
+      for (const m of state.modules) {
+        const t = F(m.typeId);
+        if (t.passthrough) continue;
+        const io = resolveIo(m);
+        const seenOut = new Set<string>();
+        for (const p of io.outputs) {
+          if (p.resource === 'any' || seenOut.has(p.resource)) continue;
+          seenOut.add(p.resource);
+          produced[p.resource] = (produced[p.resource] ?? 0) + p.rate;
+        }
+        const seenIn = new Set<string>();
+        for (const p of io.inputs) {
+          if (p.resource === 'any' || seenIn.has(p.resource)) continue;
+          seenIn.add(p.resource);
+          consumed[p.resource] = (consumed[p.resource] ?? 0) + p.rate;
+        }
+      }
+      const resources = [...new Set([...Object.keys(produced), ...Object.keys(consumed)])];
+      const net = resources.map((r) => ({ r, v: (produced[r] ?? 0) - (consumed[r] ?? 0) }));
+      const surplus = net.filter((x) => x.v > 0.01).sort((a, b) => b.v - a.v);
+      const deficit = net.filter((x) => x.v < -0.01).sort((a, b) => a.v - b.v);
+      let summary = '';
+      if (state.modules.length && (surplus.length || deficit.length)) {
+        summary = `<div class="sect"><div class="sect-title">📊 생산 요약 (명목 — 병목·미연결 미반영)</div>`;
+        if (surplus.length) {
+          summary += surplus.slice(0, 12).map((x) =>
+            `<div class="io-row"><span>${esc(x.r)}</span><span class="rate" style="color:var(--ok)">+${round1(x.v)}/분</span></div>`).join('');
+        }
+        if (deficit.length) {
+          summary += `<div class="sect-title" style="margin-top:6px">외부 공급 필요</div>`
+            + deficit.slice(0, 8).map((x) =>
+              `<div class="io-row"><span>${esc(x.r)}</span><span class="rate" style="color:var(--warn)">${round1(x.v)}/분</span></div>`).join('');
+        }
+        const pb = powerBalance();
+        summary += `<div class="io-row" style="margin-top:6px"><span>⚡ 전력 수지</span><span class="rate" style="color:${pb.consume > pb.gen ? 'var(--danger)' : 'var(--ok)'}">${pb.gen - pb.consume >= 0 ? '+' : ''}${pb.gen - pb.consume}</span></div>`;
+        for (const lc of limitCounts()) {
+          summary += `<div class="io-row"><span>${esc(lc.name)} 배치</span><span class="rate" style="color:${lc.count > lc.max ? 'var(--danger)' : 'var(--text-dim)'}">${lc.count}/${lc.max}</span></div>`;
+        }
+        summary += `</div><hr style="border:none;border-top:1px solid var(--border);margin:12px 0">`;
+      }
+      el.innerHTML = summary + `<div class="empty">
         설비나 벨트를 클릭하면 상세 정보가 표시됩니다.<br><br>
         <b>조작법</b><br>
         · 팔레트 드래그/클릭 → 배치<br>
         · <kbd>Shift</kbd>+클릭 배치 → 연속 배치<br>
         · <kbd>R</kbd> 회전 · <kbd>Del</kbd> 삭제 · <kbd>Esc</kbd> 취소<br>
+        · <kbd>Ctrl+Z</kbd> 실행 취소 · <kbd>Ctrl+Y</kbd> 다시 실행<br>
         · 포트 클릭 → <b>빈 칸을 클릭할 때마다 경유지 추가</b> →<br>
         &nbsp;&nbsp;반대 포트 클릭으로 연결 완성<br>
         · 그리는 중 <kbd>Backspace</kbd> = 경유지 되돌리기<br>
@@ -1160,7 +1264,11 @@ export function startApp(): void {
       <div style="color:var(--text-dim)">${t.footprint.w}×${t.footprint.h} · 회전 ${m.rot}° · 위치 (${m.x}, ${m.y})</div>`;
     if (t.powerRange && t.powerRange > 0) html += `<div style="color:var(--text-dim)">전력 공급 범위: ${t.powerRange}m${t.powerSource ? ' (전력원)' : ' (코어 연쇄 필요)'}</div>`;
     else if (t.powerDraw && t.powerDraw > 0) html += `<div style="color:var(--text-dim)">전력 소비량: ${t.powerDraw}</div>`;
-    if (t.maxPerBase) html += `<div style="color:var(--text-dim)">최대 배치 ${t.maxPerBase}개 (연구로 확장)</div>`;
+    if (t.maxPerBase) {
+      const cnt = state.modules.filter((x) => x.typeId === m.typeId).length;
+      const over = cnt > t.maxPerBase;
+      html += `<div style="color:${over ? 'var(--danger)' : 'var(--text-dim)'}">배치 ${cnt}/${t.maxPerBase}개${over ? ' — 한도 초과!' : ' (연구로 확장)'}</div>`;
+    }
 
     // 컨트롤 포트: 통과 제한 설정
     if (t.limiter) {
@@ -1245,6 +1353,7 @@ export function startApp(): void {
     const sel = document.getElementById('recipeSel') as HTMLSelectElement | null;
     if (sel) {
       sel.addEventListener('change', () => {
+        pushHistory();
         m.recipeId = sel.value;
         recompute();
         scheduleSave();
@@ -1253,6 +1362,7 @@ export function startApp(): void {
     const limitInput = document.getElementById('limitInput') as HTMLInputElement | null;
     if (limitInput) {
       limitInput.addEventListener('change', () => {
+        pushHistory();
         const v = parseFloat(limitInput.value);
         m.limit = Number.isFinite(v) && v >= 0 ? v : undefined;
         recompute();
@@ -1261,14 +1371,46 @@ export function startApp(): void {
     }
   }
 
+  /* ── 전력 수지 (명목 합산 — 연료 공급 여부 미반영) ── */
+  function powerBalance(): { consume: number; gen: number } {
+    let consume = 0;
+    let gen = 0;
+    for (const m of state.modules) {
+      const t = F(m.typeId);
+      consume += t.powerDraw ?? 0;
+      gen += activeRecipe(m)?.powerGen ?? t.powerGen ?? 0;
+    }
+    return { consume, gen };
+  }
+
+  /* ── 설비 배치 한도 (maxPerBase) ── */
+  function limitCounts(): { typeId: string; name: string; count: number; max: number }[] {
+    const counts = new Map<string, number>();
+    for (const m of state.modules) counts.set(m.typeId, (counts.get(m.typeId) ?? 0) + 1);
+    const out: { typeId: string; name: string; count: number; max: number }[] = [];
+    for (const [typeId, count] of counts) {
+      const t = F(typeId);
+      if (t.maxPerBase) out.push({ typeId, name: t.name, count, max: t.maxPerBase });
+    }
+    return out;
+  }
+
   /* ── 상태 바 ── */
   function updateStatus(): void {
     const nWarn = Object.keys(flowInfo.modWarn).length;
     const nUnpow = powerInfo.unpowered.size;
     let html = `<span>설비 <b>${state.modules.length}</b></span><span>연결 <b>${state.connections.length}</b></span>`;
+    const pb = powerBalance();
+    if (pb.consume > 0 || pb.gen > 0) {
+      const over = pb.consume > pb.gen;
+      html += `<span class="${over ? 'w-power' : ''}" title="발전은 코어 200 + 열에너지 뱅크(선택 연료 기준) 명목 합산">⚡ 소비 <b>${pb.consume}</b> / 공급 <b>${pb.gen}</b></span>`;
+    }
     if (nWarn) html += `<span class="w-belt">⚠️ 병목 ${nWarn}</span>`;
-    if (nUnpow) html += `<span class="w-power">⚡ 전력 부족 ${nUnpow}</span>`;
+    if (nUnpow) html += `<span class="w-power">⚡ 범위 밖 ${nUnpow}</span>`;
     if (routeInfo.unrouted.size) html += `<span class="w-power">🚫 경로 없음 ${routeInfo.unrouted.size}</span>`;
+    for (const lc of limitCounts()) {
+      if (lc.count > lc.max) html += `<span class="w-power">⚠️ ${lc.name} ${lc.count}/${lc.max} 초과</span>`;
+    }
     if (!powerInfo.hasSource && state.modules.some((m) => (F(m.typeId).powerDraw ?? 0) > 0)) {
       html += `<span>전력원(프로토콜 코어) 없음 — 전력 검사 생략</span>`;
     }
@@ -1350,10 +1492,13 @@ export function startApp(): void {
 
   /* ── 툴바 ── */
   $('btnPng').addEventListener('click', exportPNG);
+  $('btnUndo').addEventListener('click', undo);
+  $('btnRedo').addEventListener('click', redo);
   $('btnRotate').addEventListener('click', rotateTarget);
   $('btnDelete').addEventListener('click', deleteSelected);
   $('btnClear').addEventListener('click', () => {
     if (!state.modules.length || confirm('배치를 모두 지울까요?')) {
+      pushHistory();
       state.modules = [];
       state.connections = [];
       state.nextId = 1;
@@ -1380,6 +1525,7 @@ export function startApp(): void {
     if (!file) return;
     try {
       const parsed = JSON.parse(await file.text());
+      pushHistory();
       const skipped = deserializeInto(state, parsed);
       setSite(typeof parsed.site === 'string' ? parsed.site : null, false);
       selected = null;
@@ -1465,7 +1611,9 @@ export function startApp(): void {
 
   /* ── 부지 선택 UI ── */
   function setSite(id: string | null, save = true): void {
-    siteId = id && SITES.some((s) => s.id === id) ? id : null;
+    const next = id && SITES.some((s) => s.id === id) ? id : null;
+    if (save && next !== siteId) pushHistory();
+    siteId = next;
     const sel = $('siteSel') as HTMLSelectElement;
     sel.value = siteId ?? '';
     recompute();

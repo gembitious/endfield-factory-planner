@@ -19,6 +19,8 @@ export interface Recipe {
   name: string;
   inputs?: IoPort[];  // side/pos는 무시 — transport(belt/pipe)와 resource/rate만 사용
   outputs?: IoPort[];
+  /** 이 레시피 가동 시 발전량 (열에너지 뱅크 등) */
+  powerGen?: number;
   note?: string;
 }
 
@@ -36,6 +38,8 @@ export interface FacilityType {
   powerRange?: number;
   /** true면 전력의 원천(프로토콜 코어 등) — 전력 체인의 시작점 */
   powerSource?: boolean;
+  /** 기본 발전량 (코어 200 등). 레시피의 powerGen이 있으면 그 값 우선 */
+  powerGen?: number;
   /** true면 들어온 리소스를 그대로 흘려보내는 물류 설비 */
   passthrough?: boolean;
   /** true면 통과량 제한을 설정할 수 있는 물류 설비 (컨트롤 포트) */
