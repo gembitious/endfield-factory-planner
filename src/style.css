@@ -161,6 +161,13 @@ header h1 span { color: var(--accent); }
   border: 1px solid var(--border); border-radius: 6px; cursor: pointer;
 }
 #info .recipe-sel:hover { border-color: var(--accent); }
+#info .limit-row { display: flex; align-items: center; gap: 6px; }
+#info .limit-row input {
+  width: 110px; padding: 6px 8px; font-size: 12.5px; font-family: inherit;
+  background: var(--bg-panel2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 6px;
+}
+#info .limit-unit { color: var(--text-dim); font-size: 12px; }
 #info kbd {
   background: var(--bg-panel2); border: 1px solid var(--border); border-radius: 4px;
   padding: 0 5px; font-size: 11px; font-family: inherit;

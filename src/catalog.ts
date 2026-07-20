@@ -1,10 +1,11 @@
-import type { CatalogData, FacilityType } from './types';
+import type { CatalogData, FacilityType, SiteDef } from './types';
 
 export const LS_FACILITIES = 'endfield-planner-facilities-v1';
 
 export let CATALOG: CatalogData;
 export let FAC: Record<string, FacilityType> = {};
 export let CAT_COLOR: Record<string, string> = {};
+export let SITES: SiteDef[] = [];
 
 let DEFAULT_CATALOG: CatalogData | null = null;
 
@@ -32,6 +33,14 @@ export async function loadCatalog(): Promise<CatalogData> {
     }
   } catch { /* 손상된 오버라이드는 무시 */ }
   applyCatalog(structuredClone(active));
+  // 부지 프리셋 (실패해도 앱은 동작)
+  try {
+    const rs = await fetch(`${import.meta.env.BASE_URL}data/sites.json`, { cache: 'no-store' });
+    if (rs.ok) {
+      const sd = await rs.json();
+      if (Array.isArray(sd.sites)) SITES = sd.sites;
+    }
+  } catch { /* 무시 */ }
   return CATALOG;
 }
 

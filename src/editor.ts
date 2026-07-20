@@ -144,6 +144,7 @@ export function initEditor(hooks: EditorHooks): void {
         <label>최대 배치 수 <input type="number" id="efMax" value="${f.maxPerBase ?? 0}" min="0" title="0 = 제한 없음"></label>
         <label class="ed-check"><input type="checkbox" id="efSource" ${f.powerSource ? 'checked' : ''}> 전력원 (코어)</label>
         <label class="ed-check"><input type="checkbox" id="efPass" ${f.passthrough ? 'checked' : ''}> 물류 통과 (passthrough)</label>
+        <label class="ed-check"><input type="checkbox" id="efLimiter" ${f.limiter ? 'checked' : ''}> 통과 제한 설정 가능 (컨트롤 포트)</label>
       </div>
       <label class="ed-note">설명 (정보 패널에 💡로 표시)
         <textarea id="efNote" rows="2">${esc(f.note ?? '')}</textarea></label>
@@ -243,6 +244,7 @@ export function initEditor(hooks: EditorHooks): void {
       f.maxPerBase = num('efMax') || undefined;
       f.powerSource = ($('efSource') as HTMLInputElement).checked || undefined;
       f.passthrough = ($('efPass') as HTMLInputElement).checked || undefined;
+      f.limiter = ($('efLimiter') as HTMLInputElement).checked || undefined;
       f.note = ($('efNote') as HTMLTextAreaElement).value.trim() || undefined;
       f.inputs = readIo('efInputs');
       f.outputs = readIo('efOutputs');

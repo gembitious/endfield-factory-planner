@@ -1,7 +1,7 @@
 {
   "version": 2,
   "metersPerCell": 4,
-  "note": "설비/자원 명칭은 한국어 정식 서비스 기준(나무위키 대조). footprint·포트 개수/위치/종류(벨트·파이프)·전력 소비량은 EnKAD(enka.network Endfield 플래너)의 게임 클라이언트 추출 데이터 기준 실측값. 분당 생산 속도만 커뮤니티 추정치(표준 라인 30/분). 같은 리소스가 여러 포트에 있으면 설비 단위로 합산 처리(포트는 병렬 레인). image는 public/ 기준 상대 경로, 아이콘 이미지는 ⓒ Hypergryph/Gryphline (Endfield Talos Wiki 출처).",
+  "note": "설비/자원 명칭은 한국어 정식 서비스 기준(나무위키 대조). footprint·포트 개수/위치/종류(벨트·파이프)·전력 소비량은 EnKAD(enka.network Endfield 플래너)의 게임 클라이언트 추출 데이터 기준 실측값. 생산 속도는 Game8 실측 레시피(2초/10초 사이클) 기준 — 천화로 등 일부만 커뮤니티 추정. 같은 리소스가 여러 포트에 있으면 설비 단위로 합산 처리(포트는 병렬 레인). image는 public/ 기준 상대 경로, 아이콘 이미지는 ⓒ Hypergryph/Gryphline (Endfield Talos Wiki 출처).",
   "categories": {
     "자원 채집": {
       "color": "#d97706"
@@ -362,14 +362,79 @@
               "transport": "pipe"
             }
           ],
-          "note": "적동은 청정수를 공급해야 하며 부산물로 오염수를 배출합니다."
+          "note": "청정수 공급 필요, 부산물 오염수 배출."
         },
         {
-          "id": "carbonize",
-          "name": "식물 탄화",
+          "id": "refine_steel",
+          "name": "강철 제련",
           "inputs": [
             {
-              "resource": "식물",
+              "resource": "고밀도 페리움 가루",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "강철",
+              "rate": 30
+            }
+          ]
+        },
+        {
+          "id": "refine_packed",
+          "name": "고급 정련 오리지늄",
+          "inputs": [
+            {
+              "resource": "고밀도 오리지늄 가루",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "고급 정련 오리지늄",
+              "rate": 30
+            }
+          ],
+          "note": "영문 Packed Origocrust — 한국어 명칭은 추정."
+        },
+        {
+          "id": "refine_cryston",
+          "name": "크리스톤 정련",
+          "inputs": [
+            {
+              "resource": "크리스톤 가루",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "정련 크리스톤",
+              "rate": 30
+            }
+          ]
+        },
+        {
+          "id": "carbonize_buck",
+          "name": "메밀꽃 탄화",
+          "inputs": [
+            {
+              "resource": "메밀꽃",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "카본 조각",
+              "rate": 30
+            }
+          ]
+        },
+        {
+          "id": "carbonize_wuling",
+          "name": "금초·야침 탄화",
+          "inputs": [
+            {
+              "resource": "야침",
               "rate": 30
             }
           ],
@@ -379,7 +444,7 @@
               "rate": 60
             }
           ],
-          "note": "무릉의 금초·야침을 태우면 카본이 2개씩 나옵니다."
+          "note": "무릉 식물(금초/야침)은 카본 2개 산출."
         }
       ]
     },
@@ -437,8 +502,25 @@
       "image": "icons/crusher.png",
       "recipes": [
         {
-          "id": "crush_origium",
-          "name": "오리지늄 가루",
+          "id": "crush_origium_ore",
+          "name": "오리지늄 가루 (원석)",
+          "inputs": [
+            {
+              "resource": "오리지늄 광물",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "오리지늄 가루",
+              "rate": 30
+            }
+          ],
+          "note": "배터리 재료는 원석 가루입니다."
+        },
+        {
+          "id": "crush_origocrust",
+          "name": "정련 오리지늄 가루",
           "inputs": [
             {
               "resource": "정련 오리지늄",
@@ -447,7 +529,7 @@
           ],
           "outputs": [
             {
-              "resource": "오리지늄 가루",
+              "resource": "정련 오리지늄 가루",
               "rate": 30
             }
           ]
@@ -485,21 +567,69 @@
           ]
         },
         {
-          "id": "crush_plant",
-          "name": "식물 가루",
+          "id": "crush_cuprium",
+          "name": "적동 가루",
           "inputs": [
             {
-              "resource": "식물",
+              "resource": "적동 조각",
               "rate": 30
             }
           ],
           "outputs": [
             {
-              "resource": "식물 가루",
+              "resource": "적동 가루",
+              "rate": 30
+            }
+          ]
+        },
+        {
+          "id": "crush_buck",
+          "name": "메밀꽃 가루",
+          "inputs": [
+            {
+              "resource": "메밀꽃",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "메밀꽃 가루",
               "rate": 60
             }
           ],
-          "note": "식물은 가루가 2~3개 나옵니다 — 출력 라인을 늘리세요."
+          "note": "식물은 가루 2개 산출."
+        },
+        {
+          "id": "crush_yazhen",
+          "name": "야침 가루",
+          "inputs": [
+            {
+              "resource": "야침",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "야침 가루",
+              "rate": 60
+            }
+          ]
+        },
+        {
+          "id": "crush_jincao",
+          "name": "금초 가루",
+          "inputs": [
+            {
+              "resource": "금초",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "금초 가루",
+              "rate": 60
+            }
+          ]
         },
         {
           "id": "crush_carbon",
@@ -532,7 +662,7 @@
               "rate": 90
             }
           ],
-          "note": "샌드리프 1개 → 가루 3개. 라인 1개로 연마기 3대 커버."
+          "note": "1 → 3개. 라인 1개로 연마기 3대 커버."
         }
       ]
     },
@@ -635,11 +765,26 @@
               "resource": "강철 부품",
               "rate": 30
             }
-          ],
-          "note": "협곡 배터리 상위 재료."
+          ]
         },
         {
-          "id": "part_criston",
+          "id": "part_cuprium",
+          "name": "적동 부품",
+          "inputs": [
+            {
+              "resource": "적동 조각",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "적동 부품",
+              "rate": 30
+            }
+          ]
+        },
+        {
+          "id": "part_cryston",
           "name": "크리스톤 부품",
           "inputs": [
             {
@@ -653,7 +798,23 @@
               "rate": 30
             }
           ],
-          "note": "장거리 집라인 후크 전용 재료."
+          "note": "장거리 집라인 후크 전용."
+        },
+        {
+          "id": "part_xiranite",
+          "name": "실험용 식양 부품",
+          "inputs": [
+            {
+              "resource": "식양",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "실험용 식양 부품",
+              "rate": 30
+            }
+          ]
         }
       ]
     },
@@ -718,25 +879,25 @@
       "image": "icons/molder.png",
       "recipes": [
         {
-          "id": "bottle",
-          "name": "병",
+          "id": "bottle_amethyst",
+          "name": "자수정 병",
           "inputs": [
             {
-              "resource": "정련 오리지늄",
+              "resource": "정련 자수정",
               "rate": 60
             }
           ],
           "outputs": [
             {
-              "resource": "병",
+              "resource": "자수정 병",
               "rate": 30
             }
           ],
-          "note": "정련 광물 2개 → 병 1개. 정련로 2라인 입력이 최대 효율."
+          "note": "정련 광물 2개 → 병 1개."
         },
         {
-          "id": "pressure_bottle",
-          "name": "내압 병",
+          "id": "bottle_ferrium",
+          "name": "페리움 병",
           "inputs": [
             {
               "resource": "정련 페리움",
@@ -745,11 +906,59 @@
           ],
           "outputs": [
             {
-              "resource": "내압 병",
+              "resource": "페리움 병",
+              "rate": 30
+            }
+          ]
+        },
+        {
+          "id": "bottle_steel",
+          "name": "강철 병",
+          "inputs": [
+            {
+              "resource": "강철",
+              "rate": 60
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "강철 병",
+              "rate": 30
+            }
+          ]
+        },
+        {
+          "id": "bottle_cuprium",
+          "name": "적동 병",
+          "inputs": [
+            {
+              "resource": "적동 조각",
+              "rate": 60
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "적동 병",
+              "rate": 30
+            }
+          ]
+        },
+        {
+          "id": "bottle_xiranite",
+          "name": "실험용 식양 병",
+          "inputs": [
+            {
+              "resource": "식양",
               "rate": 30
             }
           ],
-          "note": "기체를 담을 수 있는 병 (재료는 추정치)."
+          "outputs": [
+            {
+              "resource": "실험용 식양 병",
+              "rate": 30
+            }
+          ],
+          "note": "기체를 담는 내압 병 계열."
         }
       ]
     },
@@ -838,28 +1047,44 @@
       "image": "icons/cultivator.png",
       "recipes": [
         {
-          "id": "valley_plant",
-          "name": "재배 (협곡)",
+          "id": "grow_buck",
+          "name": "메밀꽃 재배",
           "inputs": [
             {
-              "resource": "씨앗",
+              "resource": "메밀꽃 씨앗",
               "rate": 30
             }
           ],
           "outputs": [
             {
-              "resource": "식물",
+              "resource": "메밀꽃",
               "rate": 30
             }
           ],
-          "note": "씨앗 1 → 식물 1. 재배기 2 + 씨앗 추출기 1(재씨재) 순환."
+          "note": "협곡: 씨앗 1 → 식물 1. 재배기 2+추출기 1(재씨재) 순환."
         },
         {
-          "id": "wuling_plant",
-          "name": "재배 (무릉 액체 모드)",
+          "id": "grow_sandleaf",
+          "name": "샌드리프 재배",
           "inputs": [
             {
-              "resource": "씨앗",
+              "resource": "샌드리프 씨앗",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "샌드리프",
+              "rate": 30
+            }
+          ]
+        },
+        {
+          "id": "grow_yazhen",
+          "name": "야침 재배 (액체 모드)",
+          "inputs": [
+            {
+              "resource": "야침 씨앗",
               "rate": 30
             },
             {
@@ -870,11 +1095,32 @@
           ],
           "outputs": [
             {
-              "resource": "식물",
+              "resource": "야침",
               "rate": 60
             }
           ],
-          "note": "물을 공급하면 씨앗 1 → 식물 2. 재배기 1 + 추출기 1(재씨) 순환."
+          "note": "무릉: 물 공급 시 씨앗 1 → 식물 2. 재배기 1+추출기 1(재씨) 순환."
+        },
+        {
+          "id": "grow_jincao",
+          "name": "금초 재배 (액체 모드)",
+          "inputs": [
+            {
+              "resource": "금초 씨앗",
+              "rate": 30
+            },
+            {
+              "resource": "청정수",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "금초",
+              "rate": 60
+            }
+          ]
         }
       ]
     },
@@ -956,38 +1202,70 @@
       "image": "icons/seed_extractor.png",
       "recipes": [
         {
-          "id": "valley_seed",
-          "name": "씨앗 추출 (협곡)",
+          "id": "seed_buck",
+          "name": "메밀꽃 씨앗",
           "inputs": [
             {
-              "resource": "식물",
+              "resource": "메밀꽃",
               "rate": 30
             }
           ],
           "outputs": [
             {
-              "resource": "씨앗",
+              "resource": "메밀꽃 씨앗",
               "rate": 60
             }
           ],
-          "note": "식물 1 → 씨앗 2."
+          "note": "협곡 식물 1 → 씨앗 2."
         },
         {
-          "id": "wuling_seed",
-          "name": "씨앗 추출 (무릉)",
+          "id": "seed_sandleaf",
+          "name": "샌드리프 씨앗",
           "inputs": [
             {
-              "resource": "식물",
+              "resource": "샌드리프",
               "rate": 30
             }
           ],
           "outputs": [
             {
-              "resource": "씨앗",
+              "resource": "샌드리프 씨앗",
+              "rate": 60
+            }
+          ]
+        },
+        {
+          "id": "seed_yazhen",
+          "name": "야침 씨앗",
+          "inputs": [
+            {
+              "resource": "야침",
               "rate": 30
             }
           ],
-          "note": "무릉 식물은 1:1 (대신 재배기에서 1→2)."
+          "outputs": [
+            {
+              "resource": "야침 씨앗",
+              "rate": 30
+            }
+          ],
+          "note": "무릉 식물 1 → 씨앗 1 (대신 재배기에서 1→2)."
+        },
+        {
+          "id": "seed_jincao",
+          "name": "금초 씨앗",
+          "inputs": [
+            {
+              "resource": "금초",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "금초 씨앗",
+              "rate": 30
+            }
+          ]
         }
       ]
     },
@@ -1012,7 +1290,33 @@
       ],
       "outputs": [],
       "note": "오염수·양정 폐액류 제거. 처리량이 모자라면 앞 라인 전체가 막히므로 여유 있게 배치.",
-      "image": "icons/sewage_treatment.png"
+      "image": "icons/sewage_treatment.png",
+      "recipes": [
+        {
+          "id": "clean_sewage",
+          "name": "오염수 처리",
+          "inputs": [
+            {
+              "resource": "오염수",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ],
+          "outputs": []
+        },
+        {
+          "id": "clean_inert",
+          "name": "불활성 양정 폐액 처리",
+          "inputs": [
+            {
+              "resource": "불활성 양정 폐액",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ],
+          "outputs": []
+        }
+      ]
     },
     {
       "id": "equip_part_synth",
@@ -1104,41 +1408,126 @@
       "image": "icons/equip_part_synth.png",
       "recipes": [
         {
-          "id": "basic_part",
-          "name": "기본 장비 부품",
+          "id": "comp_amethyst",
+          "name": "자수정 장비 부품",
           "inputs": [
             {
               "resource": "정련 오리지늄",
+              "rate": 30
+            },
+            {
+              "resource": "정련 자수정",
               "rate": 30
             }
           ],
           "outputs": [
             {
-              "resource": "장비 부품",
-              "rate": 15
+              "resource": "자수정 장비 부품",
+              "rate": 6
+            }
+          ],
+          "note": "10초 사이클 = 6/분."
+        },
+        {
+          "id": "comp_ferrium",
+          "name": "페리움 장비 부품",
+          "inputs": [
+            {
+              "resource": "정련 오리지늄",
+              "rate": 60
+            },
+            {
+              "resource": "정련 페리움",
+              "rate": 60
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "페리움 장비 부품",
+              "rate": 6
             }
           ]
         },
         {
-          "id": "xiranite_part",
+          "id": "comp_cryston",
+          "name": "크리스톤 장비 부품",
+          "inputs": [
+            {
+              "resource": "고급 정련 오리지늄",
+              "rate": 60
+            },
+            {
+              "resource": "정련 크리스톤",
+              "rate": 60
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "크리스톤 장비 부품",
+              "rate": 6
+            }
+          ]
+        },
+        {
+          "id": "comp_xiranite",
           "name": "식양 장비 부품",
           "inputs": [
             {
               "resource": "식양",
-              "rate": 30
+              "rate": 60
             },
             {
-              "resource": "정련 오리고 크러스트",
-              "rate": 30
+              "resource": "고급 정련 오리지늄",
+              "rate": 60
             }
           ],
           "outputs": [
             {
               "resource": "식양 장비 부품",
-              "rate": 15
+              "rate": 6
             }
           ],
-          "note": "장비 정밀 단조에 대량 소모 — 2~3만 개 비축 권장."
+          "note": "장비 정밀 단조에 대량 소모."
+        },
+        {
+          "id": "comp_cuprium",
+          "name": "적동 장비 부품",
+          "inputs": [
+            {
+              "resource": "적동 부품",
+              "rate": 60
+            },
+            {
+              "resource": "식양",
+              "rate": 60
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "적동 장비 부품",
+              "rate": 6
+            }
+          ]
+        },
+        {
+          "id": "comp_hetonite",
+          "name": "혁동 장비 부품",
+          "inputs": [
+            {
+              "resource": "혁동 부품",
+              "rate": 12
+            },
+            {
+              "resource": "중식양",
+              "rate": 12
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "혁동 장비 부품",
+              "rate": 6
+            }
+          ]
         }
       ]
     },
@@ -1235,57 +1624,56 @@
           "pos": 5
         }
       ],
-      "note": "식물 가루 + 병 → 치료 아이템. 무릉에서는 빈 병에 액체 주입 용도.",
+      "note": "병에 가루/용액을 주입하는 설비 (치료 아이템 계열은 10초 사이클 = 6/분).",
       "image": "icons/filler.png",
       "recipes": [
         {
-          "id": "heal",
-          "name": "치료 아이템 (협곡)",
+          "id": "capsule_c",
+          "name": "메밀꽃 캡슐 C",
           "inputs": [
             {
-              "resource": "식물 가루",
+              "resource": "자수정 병",
               "rate": 30
             },
             {
-              "resource": "병",
+              "resource": "메밀꽃 가루",
               "rate": 30
             }
           ],
           "outputs": [
             {
-              "resource": "치료 아이템",
-              "rate": 30
+              "resource": "메밀꽃 캡슐 C",
+              "rate": 6
+            }
+          ],
+          "note": "10초 사이클 = 6/분."
+        },
+        {
+          "id": "capsule_b",
+          "name": "메밀꽃 캡슐 B",
+          "inputs": [
+            {
+              "resource": "페리움 병",
+              "rate": 60
+            },
+            {
+              "resource": "메밀꽃 가루",
+              "rate": 60
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "메밀꽃 캡슐 B",
+              "rate": 6
             }
           ]
         },
         {
-          "id": "bottle_xiranite",
-          "name": "액화 식양 병입",
-          "inputs": [
-            {
-              "resource": "병",
-              "rate": 30
-            },
-            {
-              "resource": "액화 식양",
-              "rate": 30,
-              "transport": "pipe"
-            }
-          ],
-          "outputs": [
-            {
-              "resource": "액화 식양이 담긴 병",
-              "rate": 30
-            }
-          ],
-          "note": "무릉 침식 제거용 액화 식양을 병에 담습니다."
-        },
-        {
-          "id": "bottle_yazhen",
+          "id": "fill_yazhen",
           "name": "야침 용액 병입",
           "inputs": [
             {
-              "resource": "병",
+              "resource": "페리움 병",
               "rate": 30
             },
             {
@@ -1296,10 +1684,53 @@
           ],
           "outputs": [
             {
-              "resource": "야침 용액이 담긴 병",
+              "resource": "야침 용액 병",
               "rate": 30
             }
           ]
+        },
+        {
+          "id": "fill_jincao",
+          "name": "금초 용액 병입",
+          "inputs": [
+            {
+              "resource": "페리움 병",
+              "rate": 30
+            },
+            {
+              "resource": "금초 용액",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "금초 용액 병",
+              "rate": 30
+            }
+          ]
+        },
+        {
+          "id": "fill_xiranite",
+          "name": "액화 식양 병입",
+          "inputs": [
+            {
+              "resource": "페리움 병",
+              "rate": 30
+            },
+            {
+              "resource": "액화 식양",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "액화 식양 병",
+              "rate": 30
+            }
+          ],
+          "note": "무릉 침식 제거용."
         }
       ]
     },
@@ -1393,37 +1824,77 @@
       "image": "icons/packer.png",
       "recipes": [
         {
-          "id": "valley_battery",
-          "name": "협곡 배터리",
+          "id": "lc_valley",
+          "name": "소용량 협곡 배터리",
           "inputs": [
             {
               "resource": "자수정 부품",
               "rate": 30
             },
             {
-              "resource": "고밀도 오리지늄 가루",
-              "rate": 30
+              "resource": "오리지늄 가루",
+              "rate": 60
             }
           ],
           "outputs": [
             {
-              "resource": "협곡 배터리",
+              "resource": "소용량 협곡 배터리",
               "rate": 6
             }
           ],
-          "note": "1라인 10초 = 6/분. 열에너지 뱅크 4대 가동 가능."
+          "note": "10초 사이클. 열에너지 뱅크 연료."
+        },
+        {
+          "id": "sc_valley",
+          "name": "중용량 협곡 배터리",
+          "inputs": [
+            {
+              "resource": "페리움 부품",
+              "rate": 60
+            },
+            {
+              "resource": "오리지늄 가루",
+              "rate": 90
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "중용량 협곡 배터리",
+              "rate": 6
+            }
+          ]
+        },
+        {
+          "id": "hc_valley",
+          "name": "대용량 협곡 배터리",
+          "inputs": [
+            {
+              "resource": "강철 부품",
+              "rate": 60
+            },
+            {
+              "resource": "고밀도 오리지늄 가루",
+              "rate": 90
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "대용량 협곡 배터리",
+              "rate": 6
+            }
+          ]
         },
         {
           "id": "explosive",
           "name": "공업 폭발물",
           "inputs": [
             {
-              "resource": "페리움 부품",
+              "resource": "자수정 부품",
               "rate": 30
             },
             {
-              "resource": "고밀도 오리지늄 가루",
-              "rate": 30
+              "resource": "아케톤 가루",
+              "rate": 6
             }
           ],
           "outputs": [
@@ -1434,41 +1905,65 @@
           ]
         },
         {
-          "id": "wuling_battery",
-          "name": "무릉 배터리",
+          "id": "lc_wuling",
+          "name": "소용량 무릉 배터리",
           "inputs": [
-            {
-              "resource": "고밀도 오리지늄 가루",
-              "rate": 30
-            },
             {
               "resource": "식양",
               "rate": 30
+            },
+            {
+              "resource": "고밀도 오리지늄 가루",
+              "rate": 90
             }
           ],
           "outputs": [
             {
-              "resource": "무릉 배터리",
+              "resource": "소용량 무릉 배터리",
               "rate": 6
             }
           ]
         },
         {
-          "id": "wuling_heal",
-          "name": "치료 아이템 (무릉)",
+          "id": "sc_wuling",
+          "name": "중용량 무릉 배터리",
           "inputs": [
             {
-              "resource": "야침 용액이 담긴 병",
+              "resource": "양정",
               "rate": 30
+            },
+            {
+              "resource": "고밀도 오리지늄 가루",
+              "rate": 120
             }
           ],
           "outputs": [
             {
-              "resource": "치료 아이템",
-              "rate": 30
+              "resource": "중용량 무릉 배터리",
+              "rate": 6
             }
           ],
-          "note": "무릉에서는 포장기가 치료 아이템을 만듭니다."
+          "note": "일명 중무배."
+        },
+        {
+          "id": "yazhen_c",
+          "name": "야침 주사약 C",
+          "inputs": [
+            {
+              "resource": "야침 용액 병",
+              "rate": 30
+            },
+            {
+              "resource": "페리움 부품",
+              "rate": 60
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "야침 주사약 C",
+              "rate": 6
+            }
+          ]
         }
       ]
     },
@@ -1602,11 +2097,11 @@
           ]
         },
         {
-          "id": "fine_plant",
-          "name": "고운 식물 가루",
+          "id": "dense_carbon",
+          "name": "고밀도 카본 가루",
           "inputs": [
             {
-              "resource": "식물 가루",
+              "resource": "카본 가루",
               "rate": 60
             },
             {
@@ -1616,7 +2111,48 @@
           ],
           "outputs": [
             {
-              "resource": "고운 식물 가루",
+              "resource": "고밀도 카본 가루",
+              "rate": 30
+            }
+          ]
+        },
+        {
+          "id": "cryston_powder",
+          "name": "크리스톤 가루",
+          "inputs": [
+            {
+              "resource": "자수정 가루",
+              "rate": 60
+            },
+            {
+              "resource": "샌드리프 가루",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "크리스톤 가루",
+              "rate": 30
+            }
+          ],
+          "note": "크리스톤은 자수정 가루 연마품."
+        },
+        {
+          "id": "ground_buck",
+          "name": "고운 메밀꽃 가루",
+          "inputs": [
+            {
+              "resource": "메밀꽃 가루",
+              "rate": 60
+            },
+            {
+              "resource": "샌드리프 가루",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "고운 메밀꽃 가루",
               "rate": 30
             }
           ]
@@ -1759,21 +2295,17 @@
           ]
         },
         {
-          "id": "jingjing_waste",
+          "id": "xircon_effluent",
           "name": "양정 폐액",
           "inputs": [
             {
-              "resource": "식양",
-              "rate": 30
-            },
-            {
-              "resource": "청정수",
+              "resource": "액화 식양",
               "rate": 30,
               "transport": "pipe"
             },
             {
               "resource": "오염수",
-              "rate": 15,
+              "rate": 30,
               "transport": "pipe"
             }
           ],
@@ -1782,9 +2314,100 @@
               "resource": "양정 폐액",
               "rate": 30,
               "transport": "pipe"
+            },
+            {
+              "resource": "불활성 양정 폐액",
+              "rate": 30,
+              "transport": "pipe"
             }
           ],
-          "note": "양정 공정의 1단계. 확장 반응기로 한 번에 처리할 수도 있습니다."
+          "note": "부산물(불활성)을 배출하지 않으면 막힙니다."
+        },
+        {
+          "id": "xircon",
+          "name": "양정",
+          "inputs": [
+            {
+              "resource": "양정 폐액",
+              "rate": 30,
+              "transport": "pipe"
+            },
+            {
+              "resource": "페리움 가루",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "양정",
+              "rate": 30
+            }
+          ]
+        },
+        {
+          "id": "hetonite",
+          "name": "혁동",
+          "inputs": [
+            {
+              "resource": "혁동 용액",
+              "rate": 60,
+              "transport": "pipe"
+            },
+            {
+              "resource": "페리움 가루",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "혁동",
+              "rate": 30
+            }
+          ]
+        },
+        {
+          "id": "cuprium_solution",
+          "name": "적동 용액",
+          "inputs": [
+            {
+              "resource": "적동 가루",
+              "rate": 30
+            },
+            {
+              "resource": "산성 침적물",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "적동 용액",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ]
+        },
+        {
+          "id": "liquid_heavy",
+          "name": "액화 중식양",
+          "inputs": [
+            {
+              "resource": "중식양",
+              "rate": 30
+            },
+            {
+              "resource": "산성 침적물",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "액화 중식양",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ]
         }
       ]
     },
@@ -1879,7 +2502,64 @@
         }
       ],
       "note": "반응기의 대형 버전(고체 포트 4:4, 캐시 8칸). 복잡한 다단 반응을 1대로 처리. 전력 2배.",
-      "image": "icons/ext_reactor.png"
+      "image": "icons/ext_reactor.png",
+      "recipes": [
+        {
+          "id": "xircon_combined",
+          "name": "양정 통합 공정",
+          "inputs": [
+            {
+              "resource": "액화 식양",
+              "rate": 30,
+              "transport": "pipe"
+            },
+            {
+              "resource": "오염수",
+              "rate": 15,
+              "transport": "pipe"
+            },
+            {
+              "resource": "페리움 가루",
+              "rate": 15
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "양정",
+              "rate": 15
+            },
+            {
+              "resource": "불활성 양정 폐액",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ],
+          "note": "반응기 2단계(폐액→양정)를 1대로. 고체 포트 4:4, 캐시 8칸."
+        },
+        {
+          "id": "as_reactor",
+          "name": "반응기 겸용",
+          "inputs": [
+            {
+              "resource": "야침 가루",
+              "rate": 30
+            },
+            {
+              "resource": "청정수",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "야침 용액",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ],
+          "note": "반응기의 모든 레시피를 사용할 수 있습니다(전력 2배)."
+        }
+      ]
     },
     {
       "id": "skyfire_furnace",
@@ -1971,7 +2651,7 @@
           "name": "식양",
           "inputs": [
             {
-              "resource": "카본 조각",
+              "resource": "고밀도 카본 가루",
               "rate": 30
             },
             {
@@ -1986,7 +2666,7 @@
               "rate": 15
             }
           ],
-          "note": "기존 방식 — 카본 다단계 가공 후 청정수와 반응."
+          "note": "기존 방식 — 카본 다단계 가공 후 합성 (속도는 커뮤니티 추정)."
         },
         {
           "id": "xiranite_gas",
@@ -2008,7 +2688,7 @@
               "rate": 30
             }
           ],
-          "note": "v1.4 기체 모드 — 공정 대폭 단축. 활성 대기는 기체 수집기로 채집(실제로는 청정수도 함께 필요)."
+          "note": "v1.4 기체 모드 — 공정 대폭 단축. 실제로는 청정수도 함께 필요."
         },
         {
           "id": "heavy_xiranite",
@@ -2030,7 +2710,7 @@
               "rate": 15
             }
           ],
-          "note": "천화로 개수 제한 탓에 식양 라인 하나를 포기해야 합니다."
+          "note": "천화로 개수 제한에 유의."
         }
       ]
     },
@@ -2101,7 +2781,7 @@
               "transport": "pipe"
             }
           ],
-          "note": "부산물(산성 침적물)을 배출하지 않으면 라인이 막힙니다."
+          "note": "부산물 미배출 시 라인 막힘."
         },
         {
           "id": "waste_recycle",
@@ -2125,7 +2805,30 @@
               "transport": "pipe"
             }
           ],
-          "note": "불활성 양정 폐액 4 → 양정 폐액 1 재활용."
+          "note": "불활성 4 → 양정 폐액 1 재활용."
+        },
+        {
+          "id": "hetonite_gas_mode",
+          "name": "혁동 기체 정제 (기체 모드)",
+          "inputs": [
+            {
+              "resource": "적동 기체",
+              "rate": 30,
+              "transport": "pipe"
+            },
+            {
+              "resource": "필터",
+              "rate": 6
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "혁동 기체",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ],
+          "note": "v1.4 — 필터를 소모해 기체를 정제."
         }
       ]
     },
@@ -2223,7 +2926,72 @@
         }
       ],
       "note": "액체가 담긴 병 → 빈 병 + 액체 분리. 액체를 창고로 옮기는 우회 수단.",
-      "image": "icons/decomposer.png"
+      "image": "icons/decomposer.png",
+      "recipes": [
+        {
+          "id": "split_yazhen",
+          "name": "야침 용액 병 분리",
+          "inputs": [
+            {
+              "resource": "야침 용액 병",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "페리움 병",
+              "rate": 30
+            },
+            {
+              "resource": "야침 용액",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ]
+        },
+        {
+          "id": "split_water",
+          "name": "청정수 병 분리",
+          "inputs": [
+            {
+              "resource": "청정수 병",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "페리움 병",
+              "rate": 30
+            },
+            {
+              "resource": "청정수",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ]
+        },
+        {
+          "id": "split_xiranite",
+          "name": "액화 식양 병 분리",
+          "inputs": [
+            {
+              "resource": "액화 식양 병",
+              "rate": 30
+            }
+          ],
+          "outputs": [
+            {
+              "resource": "페리움 병",
+              "rate": 30
+            },
+            {
+              "resource": "액화 식양",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "gas_collector",
@@ -2841,8 +3609,9 @@
           "rate": 30
         }
       ],
-      "note": "통과할 재료·최대 수량(최대 5000)을 설정하는 필터. 벨트 위에 설치.",
-      "image": "icons/item_control_port.png"
+      "note": "통과할 재료와 최대 수량을 설정하는 필터. 정보 패널에서 분당 통과 제한을 설정해 라인 속도를 조절할 수 있습니다 (예: 12/분).",
+      "image": "icons/item_control_port.png",
+      "limiter": true
     },
     {
       "id": "pipe_merger",
@@ -2919,6 +3688,34 @@
       ],
       "note": "1개 파이프를 최대 3개로 분류. 양수기 1대(60/분)를 설비 2곳에 나눠 공급하는 것이 일반적 사용법.",
       "image": "icons/pipe_sorter.png"
+    },
+    {
+      "id": "pipe_control_port",
+      "name": "파이프 컨트롤 포트",
+      "category": "물류 장치",
+      "icon": "🎚️",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "powerDraw": 0,
+      "passthrough": true,
+      "limiter": true,
+      "inputs": [
+        {
+          "resource": "any",
+          "rate": 120,
+          "transport": "pipe"
+        }
+      ],
+      "outputs": [
+        {
+          "resource": "any",
+          "rate": 120,
+          "transport": "pipe"
+        }
+      ],
+      "note": "아이템 컨트롤 포트의 파이프 버전. 기체 공정에서 식양 기체·액화 식양 정량 공급에 필수 (예: 제한 6/분)."
     },
     {
       "id": "protocol_core",
@@ -3464,6 +4261,98 @@
       ],
       "note": "지하 암관 출구. 암관 입구와 짝으로 사용.",
       "image": "icons/duct_outlet.png"
+    },
+    {
+      "id": "product_outlet",
+      "name": "생산품 배출구",
+      "category": "저장고 입출력",
+      "icon": "⛲",
+      "footprint": {
+        "w": 10,
+        "h": 3
+      },
+      "powerDraw": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "resource": "양정 폐액",
+          "rate": 30,
+          "transport": "pipe",
+          "side": "W",
+          "pos": 1
+        }
+      ],
+      "recipes": [
+        {
+          "id": "xircon_effluent",
+          "name": "양정 폐액 환급",
+          "outputs": [
+            {
+              "resource": "양정 폐액",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ]
+        },
+        {
+          "id": "clean_water",
+          "name": "청정수 배출",
+          "outputs": [
+            {
+              "resource": "청정수",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ]
+        }
+      ],
+      "note": "실험 구역 정수 노드의 배출구 (10×3 실측). 처리 노드에서 환급되는 액체를 받아옵니다."
+    },
+    {
+      "id": "sewage_inlet",
+      "name": "오염수 유입구",
+      "category": "저장고 입출력",
+      "icon": "🕳️",
+      "footprint": {
+        "w": 10,
+        "h": 3
+      },
+      "powerDraw": 0,
+      "inputs": [
+        {
+          "resource": "오염수",
+          "rate": 30,
+          "transport": "pipe",
+          "side": "W",
+          "pos": 1
+        }
+      ],
+      "outputs": [],
+      "recipes": [
+        {
+          "id": "sewage",
+          "name": "오염수 유입",
+          "inputs": [
+            {
+              "resource": "오염수",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ]
+        },
+        {
+          "id": "inert",
+          "name": "불활성 양정 폐액 유입",
+          "inputs": [
+            {
+              "resource": "불활성 양정 폐액",
+              "rate": 30,
+              "transport": "pipe"
+            }
+          ]
+        }
+      ],
+      "note": "실험 구역 정수 노드의 유입구 (10×3 실측). 오염수·폐액을 노드로 보내 처리합니다. 무릉성에서 암관으로 연결."
     },
     {
       "id": "simple_storage",

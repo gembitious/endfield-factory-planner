@@ -103,6 +103,7 @@ const NODE_CAP = 40000;  // A* 확장 상한
 const TURN_COST = 0.4;   // 직선 선호
 
 type BitsFn = (x: number, y: number) => number;
+export type InBoundsFn = ((x: number, y: number) => boolean) | null;
 
 interface LegResult {
   cells: { x: number; y: number }[];
@@ -118,9 +119,10 @@ function astarLeg(
   start: { x: number; y: number }, startAxis: Axis,
   end: { x: number; y: number }, endAxis: Axis | null,
   blocked: Set<string>, otherBits: BitsFn, ownBits: BitsFn,
-  checkStart: boolean,
+  checkStart: boolean, inBounds: InBoundsFn,
 ): LegResult | null {
   const passable = (x: number, y: number, a: Axis): boolean => {
+    if (inBounds && !inBounds(x, y)) return false;
     if (blocked.has(cellKey(x, y))) return false;
     const ob = otherBits(x, y);
     if ((ob & bit(a)) !== 0 || ob === 3) return false;
@@ -229,6 +231,7 @@ export function routeThrough(
   waypoints: { x: number; y: number }[],
   blocked: Set<string>,
   otherOcc: Map<string, CellUse>,
+  inBounds: InBoundsFn = null,
 ): { x: number; y: number }[] | null {
   const otherBits: BitsFn = (x, y) => otherOcc.get(cellKey(x, y))?.bits ?? 0;
   const own = new Map<string, number>();
@@ -260,7 +263,7 @@ export function routeThrough(
       if (i < targets.length - 1) blk.add(endKey);
       if (i > 0) blk.add(startKey);
     }
-    const leg = astarLeg(cursor, axis, t.cell, t.axis, blk, otherBits, ownBits, i === 0);
+    const leg = astarLeg(cursor, axis, t.cell, t.axis, blk, otherBits, ownBits, i === 0, inBounds);
     if (!leg) return null;
     addOwnSegs(leg.cells);
     cells = cells.length ? cells.concat(leg.cells.slice(1)) : leg.cells;
@@ -301,10 +304,18 @@ export function facilityCells(state: LayoutState): Set<string> {
   return s;
 }
 
-/** 모든 연결을 id 순서로 라우팅 (결정적). 설비/기존 라인 변경 시마다 다시 호출 */
-export function computeRoutes(state: LayoutState): RouteInfo {
+export interface SiteBounds { x0: number; y0: number; w: number; h: number }
+
+/**
+ * 모든 연결을 id 순서로 라우팅 (결정적). 설비/기존 라인 변경 시마다 다시 호출.
+ * siteBounds가 있으면 벨트는 구역 안으로 제한 (파이프는 실게임처럼 구역 밖 설치 가능).
+ */
+export function computeRoutes(state: LayoutState, siteBounds: SiteBounds | null = null): RouteInfo {
   const info = emptyRouteInfo();
   info.blocked = facilityCells(state);
+  const beltBounds: InBoundsFn = siteBounds
+    ? (x, y) => x >= siteBounds.x0 && y >= siteBounds.y0 && x < siteBounds.x0 + siteBounds.w && y < siteBounds.y0 + siteBounds.h
+    : null;
   const modById = (id: number): ModuleInst | undefined => state.modules.find((m) => m.id === id);
 
   for (const c of [...state.connections].sort((a, b) => a.id - b.id)) {
@@ -320,7 +331,10 @@ export function computeRoutes(state: LayoutState): RouteInfo {
     }
     const transport: Transport = portDef(fm, c.fromPort)?.transport ?? 'belt';
     const occ = transport === 'pipe' ? info.pipeUse : info.beltUse;
-    const cells = routeThrough(A, { cell: B.cell, axis: B.axis }, c.waypoints ?? [], info.blocked, occ);
+    const cells = routeThrough(
+      A, { cell: B.cell, axis: B.axis }, c.waypoints ?? [], info.blocked, occ,
+      transport === 'belt' ? beltBounds : null,
+    );
     if (!cells) {
       info.polys.set(c.id, null);
       info.cells.set(c.id, null);

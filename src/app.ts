@@ -1,4 +1,4 @@
-import { CATALOG, CAT_COLOR, F } from './catalog';
+import { CATALOG, CAT_COLOR, F, SITES } from './catalog';
 import { initEditor } from './editor';
 import { computeFlows } from './flows';
 import {
@@ -6,7 +6,7 @@ import {
 } from './geometry';
 import type { Pt } from './geometry';
 import { computeRoutes, emptyRouteInfo, portAnchor, rectBlockedByRoutes, routeThrough } from './routing';
-import type { RouteInfo } from './routing';
+import type { RouteInfo, SiteBounds } from './routing';
 import {
   LS_THEME, decodeShareHash, deserializeInto, encodeShareHash, loadLocal, saveLocal, serialize,
 } from './persist';
@@ -46,6 +46,24 @@ export function startApp(): void {
   let powerInfo: PowerInfo = { nodes: [], unpowered: new Set(), hasSource: false };
   let flowInfo: FlowInfo = { flows: {}, bottlenecks: new Set(), modWarn: {}, inByPort: {} };
   let routeInfo: RouteInfo = emptyRouteInfo();
+  let siteId: string | null = null;
+
+  /* ── 부지(공업 구역) ── */
+  function activeSiteBounds(): SiteBounds | null {
+    const s = SITES.find((x) => x.id === siteId);
+    if (!s) return null;
+    return { x0: -Math.floor(s.w / 2), y0: -Math.floor(s.h / 2), w: s.w, h: s.h };
+  }
+  // 구역 밖 설치가 허용되는 설비 (실게임: 필드 설치 가능 계열. 파이프는 라우팅에서 별도 허용)
+  const OUTSIDE_OK_CATEGORIES = new Set(['자원 채집', '전력 공급', '기능성 설비', '전투 보조', '기체 공업']);
+  const OUTSIDE_OK_IDS = new Set(['duct_inlet', 'duct_outlet', 'product_outlet', 'sewage_inlet']);
+  function siteAllowsPlacement(typeId: string, x: number, y: number, w: number, h: number): boolean {
+    const b = activeSiteBounds();
+    if (!b) return true;
+    const t = F(typeId);
+    if (OUTSIDE_OK_CATEGORIES.has(t.category) || OUTSIDE_OK_IDS.has(t.id)) return true;
+    return x >= b.x0 && y >= b.y0 && x + w <= b.x0 + b.w && y + h <= b.y0 + b.h;
+  }
 
   const cv = document.getElementById('cv') as HTMLCanvasElement;
   let ctx = cv.getContext('2d')!; // PNG 내보내기 시 임시로 오프스크린 컨텍스트로 교체됨
@@ -75,10 +93,10 @@ export function startApp(): void {
   let saveTimer = 0;
   function scheduleSave(): void {
     clearTimeout(saveTimer);
-    saveTimer = window.setTimeout(() => saveLocal(state), 300);
+    saveTimer = window.setTimeout(() => saveLocal(state, siteId), 300);
   }
   function recompute(): void {
-    routeInfo = computeRoutes(state);
+    routeInfo = computeRoutes(state, activeSiteBounds());
     powerInfo = computePower(state);
     flowInfo = computeFlows(state);
     updateStatus();
@@ -118,7 +136,8 @@ export function startApp(): void {
       const fp = F(m.typeId).footprint;
       const nd = nr % 180 === 0 ? { w: fp.w, h: fp.h } : { w: fp.h, h: fp.w };
       if (canPlace(state.modules, m.typeId, m.x, m.y, nr, m.id)
-        && !rectBlockedByRoutes(routeInfo, state, { x: m.x, y: m.y, w: nd.w, h: nd.h }, m.id)) {
+        && !rectBlockedByRoutes(routeInfo, state, { x: m.x, y: m.y, w: nd.w, h: nd.h }, m.id)
+        && siteAllowsPlacement(m.typeId, m.x, m.y, nd.w, nd.h)) {
         m.rot = nr;
         recompute();
         scheduleSave();
@@ -276,6 +295,7 @@ export function startApp(): void {
     const H = wrap.clientHeight;
     ctx.clearRect(0, 0, W, H);
     drawGrid(W, H);
+    drawSiteBoundary(W, H);
     drawPowerRanges();
     drawConnections();
     drawModules();
@@ -302,6 +322,33 @@ export function startApp(): void {
     const o = sOf(0, 0);
     ctx.fillStyle = cssVar('--grid-major');
     ctx.beginPath(); ctx.arc(o.x, o.y, 3, 0, Math.PI * 2); ctx.fill();
+  }
+  function drawSiteBoundary(W: number, H: number): void {
+    const b = activeSiteBounds();
+    if (!b) return;
+    const p0 = sOf(b.x0, b.y0);
+    const p1 = sOf(b.x0 + b.w, b.y0 + b.h);
+    // 구역 밖 어둡게
+    ctx.fillStyle = 'rgba(0,0,0,0.28)';
+    ctx.fillRect(0, 0, W, Math.max(0, p0.y));
+    ctx.fillRect(0, Math.min(H, p1.y), W, H - Math.min(H, p1.y));
+    ctx.fillRect(0, Math.max(0, p0.y), Math.max(0, p0.x), Math.min(H, p1.y) - Math.max(0, p0.y));
+    ctx.fillRect(Math.min(W, p1.x), Math.max(0, p0.y), W - Math.min(W, p1.x), Math.min(H, p1.y) - Math.max(0, p0.y));
+    // 경계선
+    ctx.strokeStyle = 'rgba(234,179,8,0.75)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([10, 6]);
+    ctx.strokeRect(p0.x, p0.y, p1.x - p0.x, p1.y - p0.y);
+    ctx.setLineDash([]);
+    // 라벨
+    const s = SITES.find((x) => x.id === siteId);
+    if (s && p0.y > -30) {
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'bottom';
+      ctx.fillStyle = 'rgba(234,179,8,0.9)';
+      ctx.fillText(`${s.name}`, p0.x + 4, p0.y - 4);
+    }
   }
   function drawPowerRanges(): void {
     for (const n of powerInfo.nodes) {
@@ -546,9 +593,13 @@ export function startApp(): void {
     const isPipe = (p.transport ?? 'belt') === 'pipe';
     const occ = isPipe ? routeInfo.pipeUse : routeInfo.beltUse;
 
-    // 커서 위치까지의 실시간 경로 미리보기 (경유지 경유)
+    // 커서 위치까지의 실시간 경로 미리보기 (경유지 경유, 벨트는 구역 제한)
     const target = { x: Math.floor(mouseCell.x), y: Math.floor(mouseCell.y) };
-    const cells = routeThrough(A, { cell: target, axis: null }, pending.waypoints, routeInfo.blocked, occ);
+    const sb = activeSiteBounds();
+    const inBounds = !isPipe && sb
+      ? (x: number, y: number) => x >= sb.x0 && y >= sb.y0 && x < sb.x0 + sb.w && y < sb.y0 + sb.h
+      : null;
+    const cells = routeThrough(A, { cell: target, axis: null }, pending.waypoints, routeInfo.blocked, occ, inBounds);
 
     if (cells) {
       const pts: Pt[] = [A.point, ...cells.map((c) => ({ x: c.x + 0.5, y: c.y + 0.5 }))];
@@ -690,7 +741,8 @@ export function startApp(): void {
     ghost.x = Math.round(mouseCell.x - d.w / 2);
     ghost.y = Math.round(mouseCell.y - d.h / 2);
     ghost.valid = canPlace(state.modules, ghost.typeId, ghost.x, ghost.y, ghost.rot, null)
-      && !rectBlockedByRoutes(routeInfo, state, { x: ghost.x, y: ghost.y, w: d.w, h: d.h }, null);
+      && !rectBlockedByRoutes(routeInfo, state, { x: ghost.x, y: ghost.y, w: d.w, h: d.h }, null)
+      && siteAllowsPlacement(ghost.typeId, ghost.x, ghost.y, d.w, d.h);
   }
 
   wrap.addEventListener('wheel', (e) => {
@@ -908,8 +960,10 @@ export function startApp(): void {
     if (moveDrag) {
       const m = modById(moveDrag.id);
       if (m && moveDrag.moved) {
+        const mr = moduleRect(m);
         if (!canPlace(state.modules, m.typeId, m.x, m.y, m.rot, m.id)
-          || rectBlockedByRoutes(routeInfo, state, moduleRect(m), m.id)) {
+          || rectBlockedByRoutes(routeInfo, state, mr, m.id)
+          || !siteAllowsPlacement(m.typeId, mr.x, mr.y, mr.w, mr.h)) {
           m.x = moveDrag.origX;
           m.y = moveDrag.origY;
           toast('겹치는 위치에는 놓을 수 없습니다');
@@ -1108,6 +1162,16 @@ export function startApp(): void {
     else if (t.powerDraw && t.powerDraw > 0) html += `<div style="color:var(--text-dim)">전력 소비량: ${t.powerDraw}</div>`;
     if (t.maxPerBase) html += `<div style="color:var(--text-dim)">최대 배치 ${t.maxPerBase}개 (연구로 확장)</div>`;
 
+    // 컨트롤 포트: 통과 제한 설정
+    if (t.limiter) {
+      html += `<div class="sect"><div class="sect-title">통과 제한</div>
+        <div class="limit-row">
+          <input type="number" id="limitInput" min="0" step="1" placeholder="무제한"
+            value="${m.limit ?? ''}" title="분당 통과 개수 제한 (실게임 컨트롤 포트의 수량 제한)">
+          <span class="limit-unit">개/분</span>
+        </div></div>`;
+    }
+
     // 레시피 선택
     const act = activeRecipe(m);
     if (t.recipes?.length && act) {
@@ -1186,6 +1250,15 @@ export function startApp(): void {
         scheduleSave();
       });
     }
+    const limitInput = document.getElementById('limitInput') as HTMLInputElement | null;
+    if (limitInput) {
+      limitInput.addEventListener('change', () => {
+        const v = parseFloat(limitInput.value);
+        m.limit = Number.isFinite(v) && v >= 0 ? v : undefined;
+        recompute();
+        scheduleSave();
+      });
+    }
   }
 
   /* ── 상태 바 ── */
@@ -1199,6 +1272,8 @@ export function startApp(): void {
     if (!powerInfo.hasSource && state.modules.some((m) => (F(m.typeId).powerDraw ?? 0) > 0)) {
       html += `<span>전력원(프로토콜 코어) 없음 — 전력 검사 생략</span>`;
     }
+    const site = SITES.find((x) => x.id === siteId);
+    if (site) html += `<span>📐 ${site.name}</span>`;
     html += `<span style="margin-left:auto">줌 ${Math.round(view.scale * 100)}%</span>`;
     $('statusbar').innerHTML = html;
     $('hint').style.display = state.modules.length ? 'none' : 'block';
@@ -1289,7 +1364,7 @@ export function startApp(): void {
     }
   });
   $('btnExport').addEventListener('click', () => {
-    const blob = new Blob([JSON.stringify(serialize(state), null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(serialize(state, siteId), null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     const d = new Date();
@@ -1304,7 +1379,9 @@ export function startApp(): void {
     const file = input.files?.[0];
     if (!file) return;
     try {
-      const skipped = deserializeInto(state, JSON.parse(await file.text()));
+      const parsed = JSON.parse(await file.text());
+      const skipped = deserializeInto(state, parsed);
+      setSite(typeof parsed.site === 'string' ? parsed.site : null, false);
       selected = null;
       pending = null;
       if (skipped) toast(`알 수 없는 항목 ${skipped}개는 건너뛰었습니다`);
@@ -1321,7 +1398,7 @@ export function startApp(): void {
     const base = location.origin === 'null' || location.protocol === 'file:'
       ? location.href.split('#')[0]
       : location.origin + location.pathname;
-    const link = base + encodeShareHash(state);
+    const link = base + encodeShareHash(state, siteId);
     try {
       await navigator.clipboard.writeText(link);
       toast('공유 URL이 클립보드에 복사되었습니다');
@@ -1349,6 +1426,7 @@ export function startApp(): void {
     if (!data) return false;
     try {
       const skipped = deserializeInto(state, data);
+      setSite(typeof data.site === 'string' ? data.site : null, false);
       selected = null;
       pending = null;
       if (skipped) toast(`알 수 없는 항목 ${skipped}개는 건너뛰었습니다`);
@@ -1385,6 +1463,21 @@ export function startApp(): void {
     toast,
   });
 
+  /* ── 부지 선택 UI ── */
+  function setSite(id: string | null, save = true): void {
+    siteId = id && SITES.some((s) => s.id === id) ? id : null;
+    const sel = $('siteSel') as HTMLSelectElement;
+    sel.value = siteId ?? '';
+    recompute();
+    if (save) scheduleSave();
+  }
+  {
+    const sel = $('siteSel') as HTMLSelectElement;
+    sel.innerHTML = `<option value="">부지 없음 (무한)</option>`
+      + SITES.map((s) => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
+    sel.addEventListener('change', () => setSite(sel.value || null));
+  }
+
   const theme = (() => { try { return localStorage.getItem(LS_THEME); } catch { return null; } })() ?? 'dark';
   document.documentElement.dataset.theme = theme;
   $('btnTheme').textContent = theme === 'dark' ? '🌙' : '☀️';
@@ -1404,7 +1497,10 @@ export function startApp(): void {
   if (!tryLoadFromHash()) {
     const saved = loadLocal();
     if (saved) {
-      try { deserializeInto(state, saved); } catch (e) { console.warn('저장 데이터 복원 실패', e); }
+      try {
+        deserializeInto(state, saved);
+        setSite(typeof saved.site === 'string' ? saved.site : null, false);
+      } catch (e) { console.warn('저장 데이터 복원 실패', e); }
     }
   }
   recompute();

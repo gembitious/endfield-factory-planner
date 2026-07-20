@@ -38,6 +38,8 @@ export interface FacilityType {
   powerSource?: boolean;
   /** true면 들어온 리소스를 그대로 흘려보내는 물류 설비 */
   passthrough?: boolean;
+  /** true면 통과량 제한을 설정할 수 있는 물류 설비 (컨트롤 포트) */
+  limiter?: boolean;
   maxPerBase?: number;
   note?: string;
   /** 포트 슬롯 (위치·운송 종류는 실측 고정). recipes가 없으면 여기 적힌 resource/rate가 그대로 사용됨 */
@@ -45,6 +47,16 @@ export interface FacilityType {
   outputs?: IoPort[];
   /** 복수 레시피. 있으면 선택된 레시피(기본 = 첫 번째)의 자원이 포트 슬롯에 배정됨 */
   recipes?: Recipe[];
+}
+
+/** 부지(공업 구역) 프리셋 — public/data/sites.json */
+export interface SiteDef {
+  id: string;
+  name: string;
+  w: number;
+  h: number;
+  source?: string;
+  note?: string;
 }
 
 export interface CatalogData {
@@ -64,6 +76,8 @@ export interface ModuleInst {
   rot: number; // 0 | 90 | 180 | 270
   /** 선택된 레시피 id (설비에 recipes가 있을 때만 의미) */
   recipeId?: string;
+  /** 통과량 제한 (개/분). limiter 설비에서만 의미, 없으면 무제한 */
+  limit?: number;
 }
 
 /** 벨트/파이프 연결. 포트 키는 'in:<idx>' / 'out:<idx>' */
@@ -85,6 +99,8 @@ export interface LayoutState {
 
 export interface SerializedLayout {
   v: number;
+  /** 선택된 부지 프리셋 id */
+  site?: string;
   nextId: number;
   modules: ModuleInst[];
   connections: Connection[];

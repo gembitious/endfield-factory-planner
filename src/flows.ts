@@ -43,12 +43,19 @@ export function computeFlows(state: LayoutState): FlowInfo {
       const t = F(m.typeId);
       if (t.passthrough) {
         const agg: Record<string, number> = {};
+        let total = 0;
         for (const ic of inByModule[m.id] ?? []) {
-          for (const [r, v] of Object.entries(flows[ic.id] ?? {})) agg[r] = (agg[r] ?? 0) + v;
+          for (const [r, v] of Object.entries(flows[ic.id] ?? {})) {
+            agg[r] = (agg[r] ?? 0) + v;
+            total += v;
+          }
         }
+        // 컨트롤 포트: 설정된 통과 제한(개/분)으로 총량 스케일
+        const lim = t.limiter && m.limit !== undefined ? m.limit : Infinity;
+        const scale = total > lim ? lim / total : 1;
         const k = (outByModule[m.id] ?? []).length;
         const out: Record<string, number> = {};
-        for (const [r, v] of Object.entries(agg)) out[r] = v / k;
+        for (const [r, v] of Object.entries(agg)) out[r] = (v * scale) / k;
         next[c.id] = out;
       } else {
         const p = portDef(m, c.fromPort);

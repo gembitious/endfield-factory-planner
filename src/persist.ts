@@ -4,13 +4,15 @@ import type { LayoutState, SerializedLayout } from './types';
 export const LS_KEY = 'endfield-planner-v1';
 export const LS_THEME = 'endfield-planner-theme';
 
-export function serialize(state: LayoutState): SerializedLayout {
+export function serialize(state: LayoutState, site?: string | null): SerializedLayout {
   return {
     v: 1,
+    ...(site ? { site } : {}),
     nextId: state.nextId,
     modules: state.modules.map((m) => ({
       id: m.id, typeId: m.typeId, x: m.x, y: m.y, rot: m.rot,
       ...(m.recipeId ? { recipeId: m.recipeId } : {}),
+      ...(m.limit !== undefined ? { limit: m.limit } : {}),
     })),
     connections: state.connections.map((c) => ({
       id: c.id, fromModuleId: c.fromModuleId, fromPort: c.fromPort,
@@ -33,6 +35,7 @@ export function deserializeInto(state: LayoutState, data: SerializedLayout): num
       id: m.id, typeId: m.typeId, x: m.x | 0, y: m.y | 0,
       rot: [0, 90, 180, 270].includes(m.rot) ? m.rot : 0,
       recipeId: m.recipeId && t.recipes?.some((r) => r.id === m.recipeId) ? m.recipeId : undefined,
+      limit: typeof m.limit === 'number' && m.limit >= 0 ? m.limit : undefined,
     });
   }
   const ids = new Set(mods.map((m) => m.id));
@@ -67,8 +70,8 @@ export function b64decode(b64: string): string {
   return new TextDecoder().decode(bytes);
 }
 
-export function encodeShareHash(state: LayoutState): string {
-  return '#L=' + encodeURIComponent(b64encode(JSON.stringify(serialize(state))));
+export function encodeShareHash(state: LayoutState, site?: string | null): string {
+  return '#L=' + encodeURIComponent(b64encode(JSON.stringify(serialize(state, site))));
 }
 
 export function decodeShareHash(hash: string): SerializedLayout | null {
@@ -77,8 +80,8 @@ export function decodeShareHash(hash: string): SerializedLayout | null {
   return JSON.parse(b64decode(decodeURIComponent(mt[1]))) as SerializedLayout;
 }
 
-export function saveLocal(state: LayoutState): void {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(serialize(state))); } catch { /* 무시 */ }
+export function saveLocal(state: LayoutState, site?: string | null): void {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(serialize(state, site))); } catch { /* 무시 */ }
 }
 
 export function loadLocal(): SerializedLayout | null {
